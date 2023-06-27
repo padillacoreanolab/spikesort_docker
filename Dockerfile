@@ -19,9 +19,9 @@ RUN conda config --add channels conda-forge && \
     conda config --add channels anaconda && \
     conda config --add channels edeno
 
-COPY requirements.yml .
+COPY spike_interface_0_97_1.yml .
 
-RUN conda env create -f requirements.yml
+RUN conda env create -f spike_interface_0_97_1.yml
 
 SHELL ["conda", "run", "-n", "spike_interface_0_97_1", "/bin/bash", "-c"]
 

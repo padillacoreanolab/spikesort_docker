@@ -3,5 +3,8 @@ services:
   app:
     build:
       context: .
+      dockerfile: Dockerfile-spikesort
+    image: padillacoreanolab/spikesort:latest
+    container_name: spikesort_c
     ports:
       - "7000:7000"

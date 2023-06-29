@@ -20,8 +20,13 @@ SHELL ["conda", "run", "-n", "spike_interface_0_97_1", "/bin/bash", "-c"]
 RUN pip install spikeinterface[full,widgets]==0.97.1
 RUN pip install --upgrade mountainsort5
 RUN conda install -c edeno spectral_connectivity --yes
-RUN conda install -c anaconda gitpython
+RUN conda install -c anaconda gitpython -y
 RUN conda install -c conda-forge gradio -y
+RUN pip install chardet
+RUN pip install cchardet
+
+RUN conda init bash
+RUN echo ". ~/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc
 
 # copy all files in the directory over to container
 COPY . .

@@ -1,3 +1,18 @@
-docker build -t <image_name:tag> <path_to_Dockerfile>
+# building image
+docker build -t --no-cache <image_name:tag> <path_to_Dockerfile> # docker build -t  --no-cache spikesort:latest . > builds the latest version of the image without using cached data
+# Tag the Docker image
+docker tag <image_name> <dockerhub_username>/<image_name>:latest
+# Push the Docker image to Docker Hub
+docker push <dockerhub_username>/<image_name>:latest # padillacoreanolab/spikesort:latest
+
+# example of build and push commands
+docker build -t  --no-cache spikesort:latest .
+docker tag spikesort padillacoreanolab/spikesort:latest
+docker push padillacoreanolab/spikesort:latest
+
+# pull the latest image
+docker pull spikesort:latest
+
+# running container
 docker run -it -d -–name <gradio-app-name> -p 7000:7000 <image_name:tag> 
-http://localhost:7000
+ use ttp://localhost:7000 to access the app

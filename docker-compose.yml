@@ -5,7 +5,3 @@ services:
       context: .
     ports:
       - "7000:7000"
-    environment:
-      - PATH=/root/miniconda3/bin:${PATH}
-      - PATH=/opt/miniconda3/bin:${PATH}
-    command: python app.py

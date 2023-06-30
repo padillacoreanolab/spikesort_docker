@@ -29,16 +29,15 @@ from probeinterface import get_probe
 from probeinterface.plotting import plot_probe, plot_probe_group
 from probeinterface import write_prb, read_prb
 from pathlib import Path
-import gradio as gr 
+# import gradio as gr 
 
-def spikesort(data_dir):
+def spikesort():
+    raise ValueError()
     pwd = os.getcwd()
-    parent_spikesorting_output_directory = pwd #################### fix to be actual directory like in the og code
     prb_file_path = Path(pwd +"/nancyprobe_linearprobelargespace.prb")
     probe_object = read_prb(prb_file_path)
     probe_df = probe_object.to_dataframe()
-    
-    recording_filepath_glob = str(Path(data_dir + "/**/*merged.rec"))
+    recording_filepath_glob = str(Path(pwd + "data/**/*merged.rec"))
     all_recording_files = glob.glob(recording_filepath_glob, recursive=True)
     
     for recording_file in all_recording_files:
@@ -71,7 +70,7 @@ def spikesort(data_dir):
         plt.savefig(os.path.join(recording_output_directory, f"{recording_basename}_raster_plot.png"))
         plt.close()
 
-        waveform_output_directory = os.path.join(parent_spikesorting_output_directory, "waveforms")
+        waveform_output_directory = os.path.join(recording_output_directory, "waveforms")
 
         we_spike_sorted = si.extract_waveforms(recording=recording_preprocessed, 
                                        sorting=spike_sorted_object, folder=waveform_output_directory,
@@ -79,7 +78,7 @@ def spikesort(data_dir):
                                       n_jobs=8, total_memory="1G", overwrite=True,
                                        max_spikes_per_unit=2000)
 
-        phy_output_directory = os.path.join(parent_spikesorting_output_directory, "phy")
+        phy_output_directory = os.path.join(recording_output_directory, "phy")
 
         export_to_phy(we_spike_sorted, phy_output_directory,
               compute_pc_features=True, compute_amplitudes=True, remove_if_exists=False)
@@ -107,7 +106,7 @@ def spikesort(data_dir):
     plt.savefig(os.path.join(recording_output_directory, f"{recording_basename}_raster_plot.png"))
     plt.close()
 
-    waveform_output_directory = os.path.join(parent_spikesorting_output_directory, "waveforms")
+    waveform_output_directory = os.path.join(recording_output_directory, "waveforms")
 
     we_spike_sorted = si.extract_waveforms(recording=recording_preprocessed, 
                                    sorting=spike_sorted_object, folder=waveform_output_directory,
@@ -115,14 +114,17 @@ def spikesort(data_dir):
                                   n_jobs=8, total_memory="1G", overwrite=True,
                                    max_spikes_per_unit=2000)
 
-    phy_output_directory = os.path.join(parent_spikesorting_output_directory, "phy")
+    phy_output_directory = os.path.join(recording_output_directory, "phy")
 
     export_to_phy(we_spike_sorted, phy_output_directory,
           compute_pc_features=True, compute_amplitudes=True, remove_if_exists=False)
     return "SPIKES ARE SORTED! :)"
 
-input_text = gr.inputs.Textbox(label="Enter folder path")
-output_text = gr.outputs.Textbox(label="Status")
-interface = gr.Interface(fn=spikesort, inputs=input_text, outputs=output_text)
+if __name__ == "__main__":
+    spikesort()
 
-interface.launch(server_name="0.0.0.0", server_port=7000)
+# input_text = gr.inputs.Textbox(label="Enter folder path")
+# output_text = gr.outputs.Textbox(label="Status")
+# interface = gr.Interface(fn=spikesort, inputs=input_text, outputs=output_text)
+
+# interface.launch(server_name="0.0.0.0", server_port=7000)

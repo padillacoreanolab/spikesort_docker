@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     image: padillacoreanolab/spikesort:latest
     # volumes: 
-    # - C:/path/on/host:/path/inside/container
+    # - host/data:container/data
     container_name: spikesort_c
     ports:
       - "7000:7000"

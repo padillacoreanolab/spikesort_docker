@@ -32,19 +32,20 @@ from pathlib import Path
 # import gradio as gr 
 
 def spikesort():
-    raise ValueError()
     pwd = os.getcwd()
-    prb_file_path = Path(pwd +"/nancyprobe_linearprobelargespace.prb")
+    print(pwd)
+    prb_file_path = Path(pwd +"/spikesort/data/nancyprobe_linearprobelargespace.prb")
     probe_object = read_prb(prb_file_path)
     probe_df = probe_object.to_dataframe()
-    recording_filepath_glob = str(Path(pwd + "data/**/*merged.rec"))
+    print(probe_df)
+    recording_filepath_glob = str(Path(pwd + "/spikesort/data/**/*merged.rec"))
     all_recording_files = glob.glob(recording_filepath_glob, recursive=True)
     
     for recording_file in all_recording_files:
         trodes_recording = se.read_spikegadgets(recording_file, stream_id="trodes")       
         trodes_recording = trodes_recording.set_probes(probe_object)
         recording_basename = os.path.basename(recording_file)
-        recording_output_directory = f"./proc1/{recording_basename}"
+        recording_output_directory = f"{pwd}/spikesort/proc1/{recording_basename}"
         os.makedirs(recording_output_directory, exist_ok=True)
         child_spikesorting_output_directory = os.path.join(recording_output_directory,"ss_output")
 

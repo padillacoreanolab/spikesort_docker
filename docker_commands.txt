@@ -6,7 +6,7 @@ docker tag <image_name> <dockerhub_username>/<image_name>:latest
 docker push <dockerhub_username>/<image_name>:latest # padillacoreanolab/spikesort:latest
 
 # example of build and push commands
-docker build -t  --no-cache spikesort:latest .
+docker build --no-cache -t spikesort:latest .
 docker tag spikesort padillacoreanolab/spikesort:latest
 docker push padillacoreanolab/spikesort:latest
 

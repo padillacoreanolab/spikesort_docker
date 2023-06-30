@@ -14,11 +14,11 @@ echo Shutting Down Open Docker Containers With The Same Name ...
 docker stop spikesort_c
 docker rm spikesort_c
 
-set /p path_variable="ENTER THE FULL PATH TO THE SPIKESORT INPUT DATA: "
+set /p path_variable="ENTER THE FULL PATH TO THE PARENT FOLDER OF THE SPIKESORT DATA FOLDER: "
 
 echo Running Docker Container:  spikesort_c...
 @REM docker-compose -f docker-compose.yml up -d
-docker run --name spikesort_c --log-driver=json-file -v %path_variable%:/data -p 7000:7000 padillacoreanolab/spikesort:latest
+docker run --name spikesort_c --log-driver=json-file -v %path_variable%:/spikesort -p 7000:7000 padillacoreanolab/spikesort:latest
 
 pause
 

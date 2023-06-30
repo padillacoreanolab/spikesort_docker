@@ -18,7 +18,7 @@ set /p path_variable="ENTER THE FULL PATH TO THE PARENT FOLDER OF THE SPIKESORT 
 
 echo Running Docker Container:  spikesort_c...
 @REM docker-compose -f docker-compose.yml up -d
-docker run --name spikesort_c --log-driver=json-file -v %path_variable%:/spikesort -p 7000:7000 padillacoreanolab/spikesort:latest
+docker run -e PYTHONUNBUFFERED=0 --name spikesort_c --log-driver=json-file -v %path_variable%:/spikesort padillacoreanolab/spikesort:latest bash -c "source activate spike_interface_0_97_1 && python app.py"
 
 pause
 

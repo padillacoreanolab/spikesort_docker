@@ -31,4 +31,4 @@ RUN echo ". ~/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc
 # copy all files in the directory over to container
 COPY . .
 
-CMD ["conda", "run", "-n", "spike_interface_0_97_1", "python", "app.py"]
+# CMD ["conda", "run", "-n", "spike_interface_0_97_1", "python", "app.py"]

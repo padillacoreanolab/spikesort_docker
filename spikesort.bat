@@ -17,9 +17,9 @@ docker stop spikesort_c
 docker rm spikesort_c
 
 echo Starting Docker Container ...
-docker-compose -f docker-compose.yml up -d && (
-    start http://localhost:7000
-)
+docker-compose -f docker-compose.yml up -d 
+timeout /T 5
+start http://localhost:7000
 
 pause
 

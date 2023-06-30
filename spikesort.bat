@@ -14,7 +14,7 @@ echo Shutting Down Open Docker Containers With The Same Name ...
 docker stop spikesort_c
 docker rm spikesort_c
 
-set /p path_variable="Enter the path to the spikesort input data: "
+set /p path_variable="ENTER THE FULL PATH TO THE SPIKESORT INPUT DATA: "
 
 echo Running Docker Container:  spikesort_c...
 @REM docker-compose -f docker-compose.yml up -d

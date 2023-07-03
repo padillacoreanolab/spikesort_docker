@@ -81,44 +81,11 @@ def spikesort():
 
         phy_output_directory = os.path.join(recording_output_directory, "phy")
 
+        print("Saving PHY2 output...")
         export_to_phy(we_spike_sorted, phy_output_directory,
               compute_pc_features=True, compute_amplitudes=True, remove_if_exists=False)
-
-
-    # Make sure the recording is preprocessed appropriately
-    # lazy preprocessing
-    recording_filtered = sp.bandpass_filter(trodes_recording, freq_min=300, freq_max=6000)
-    recording_preprocessed: si.BaseRecording = sp.whiten(recording_filtered, dtype='float32')
-    spike_sorted_object = ms5.sorting_scheme2(
-    recording=recording_preprocessed,
-    sorting_parameters=ms5.Scheme2SortingParameters(
-        detect_sign=0,
-        phase1_detect_channel_radius=700,
-        detect_channel_radius=700,
-        # other parameters...
-        )
-            )
-    spike_sorted_object.save(folder=child_spikesorting_output_directory)
-
-    sw.plot_rasters(spike_sorted_object)
-    plt.title('plot_title')
-    plt.ylabel("Unit IDs")
-
-    plt.savefig(os.path.join(recording_output_directory, f"{recording_basename}_raster_plot.png"))
-    plt.close()
-
-    waveform_output_directory = os.path.join(recording_output_directory, "waveforms")
-
-    we_spike_sorted = si.extract_waveforms(recording=recording_preprocessed, 
-                                   sorting=spike_sorted_object, folder=waveform_output_directory,
-                                  ms_before=1, ms_after=1, progress_bar=True,
-                                  n_jobs=8, total_memory="1G", overwrite=True,
-                                   max_spikes_per_unit=2000)
-
-    phy_output_directory = os.path.join(recording_output_directory, "phy")
-
-    export_to_phy(we_spike_sorted, phy_output_directory,
-          compute_pc_features=True, compute_amplitudes=True, remove_if_exists=False)
+        print("PHY2 output Saved!")
+        
     return "SPIKES ARE SORTED! :)"
 
 if __name__ == "__main__":

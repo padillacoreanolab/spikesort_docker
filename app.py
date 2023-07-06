@@ -32,9 +32,7 @@ from pathlib import Path
 # import gradio as gr 
 
 def spikesort():
-    # r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys"
     pwd = os.getcwd() + "/spikesort" # r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys"
-
     print(pwd)
     prb_file_path = Path(f"{pwd}/data/nancyprobe_linearprobelargespace.prb")
     probe_object = read_prb(prb_file_path)
@@ -47,7 +45,7 @@ def spikesort():
         trodes_recording = se.read_spikegadgets(recording_file, stream_id="trodes")       
         trodes_recording = trodes_recording.set_probes(probe_object)
         recording_basename = os.path.basename(recording_file)
-        recording_output_directory = str(Path(f"{pwd}/proc1/{recording_basename}"))
+        recording_output_directory = str(Path(f"{pwd}/proc/{recording_basename}"))
         os.makedirs(recording_output_directory, exist_ok=True)
         child_spikesorting_output_directory = os.path.join(recording_output_directory,"ss_output")
         child_recording_output_directory = os.path.join(recording_output_directory,"preprocessed_recording_output")

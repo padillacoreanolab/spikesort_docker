@@ -33,7 +33,8 @@ from pathlib import Path
 
 def spikesort():
     # r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys"
-    pwd = os.getcwd()
+    pwd = r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys" #os.getcwd() + "/spikesort"
+
     print(pwd)
     prb_file_path = Path(f"{pwd}/data/nancyprobe_linearprobelargespace.prb")
     probe_object = read_prb(prb_file_path)
@@ -49,6 +50,7 @@ def spikesort():
         recording_output_directory = str(Path(f"{pwd}/proc1/{recording_basename}"))
         os.makedirs(recording_output_directory, exist_ok=True)
         child_spikesorting_output_directory = os.path.join(recording_output_directory,"ss_output")
+        child_recording_output_directory = os.path.join(recording_output_directory,"preprocessed_recording_output")
 
         # Make sure the recording is preprocessed appropriately
         # lazy preprocessing
@@ -63,8 +65,9 @@ def spikesort():
             # other parameters...
             )
                 )
-        print("STARTING SORTING...")
-        spike_sorted_object.save(folder=child_spikesorting_output_directory)
+        print("SAVING VARIABLES...")
+        spike_sorted_object_disk = spike_sorted_object.save(folder=child_spikesorting_output_directory)
+        recording_preprocessed_disk = recording_preprocessed.save(folder=child_recording_output_directory)
 
         sw.plot_rasters(spike_sorted_object)
         plt.title(recording_basename)
@@ -75,8 +78,9 @@ def spikesort():
 
         waveform_output_directory = os.path.join(recording_output_directory, "waveforms")
 
-        we_spike_sorted = si.extract_waveforms(recording=recording_preprocessed, 
-                                       sorting=spike_sorted_object, folder=waveform_output_directory,
+        print("EXTRACTING WAVEFORMS...")
+        we_spike_sorted = si.extract_waveforms(recording=recording_preprocessed_disk, 
+                                       sorting=spike_sorted_object_disk, folder=waveform_output_directory,
                                       ms_before=1, ms_after=1, progress_bar=True,
                                       n_jobs=8, total_memory="1G", overwrite=True,
                                        max_spikes_per_unit=2000)

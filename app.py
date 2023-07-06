@@ -33,7 +33,7 @@ from pathlib import Path
 
 def spikesort():
     # r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys"
-    pwd = r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys" #os.getcwd() + "/spikesort"
+    pwd = os.getcwd() + "/spikesort" # r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys"
 
     print(pwd)
     prb_file_path = Path(f"{pwd}/data/nancyprobe_linearprobelargespace.prb")

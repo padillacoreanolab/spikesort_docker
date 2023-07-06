@@ -32,20 +32,21 @@ from pathlib import Path
 # import gradio as gr 
 
 def spikesort():
+    # r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys"
     pwd = os.getcwd()
     print(pwd)
-    prb_file_path = Path(pwd +"/spikesort/data/nancyprobe_linearprobelargespace.prb")
+    prb_file_path = Path(f"{pwd}/data/nancyprobe_linearprobelargespace.prb")
     probe_object = read_prb(prb_file_path)
     probe_df = probe_object.to_dataframe()
     print(probe_df)
-    recording_filepath_glob = str(Path(pwd + "/spikesort/data/**/*merged.rec"))
+    recording_filepath_glob = str(Path(f"{pwd}/data/**/*merged.rec"))
     all_recording_files = glob.glob(recording_filepath_glob, recursive=True)
     
     for recording_file in all_recording_files:
         trodes_recording = se.read_spikegadgets(recording_file, stream_id="trodes")       
         trodes_recording = trodes_recording.set_probes(probe_object)
         recording_basename = os.path.basename(recording_file)
-        recording_output_directory = f"{pwd}/spikesort/proc1/{recording_basename}"
+        recording_output_directory = str(Path(f"{pwd}/proc1/{recording_basename}"))
         os.makedirs(recording_output_directory, exist_ok=True)
         child_spikesorting_output_directory = os.path.join(recording_output_directory,"ss_output")
 
@@ -62,6 +63,7 @@ def spikesort():
             # other parameters...
             )
                 )
+        print("STARTING SORTING...")
         spike_sorted_object.save(folder=child_spikesorting_output_directory)
 
         sw.plot_rasters(spike_sorted_object)
@@ -80,12 +82,11 @@ def spikesort():
                                        max_spikes_per_unit=2000)
 
         phy_output_directory = os.path.join(recording_output_directory, "phy")
-
         print("Saving PHY2 output...")
         export_to_phy(we_spike_sorted, phy_output_directory,
               compute_pc_features=True, compute_amplitudes=True, remove_if_exists=False)
         print("PHY2 output Saved!")
-        
+
     return "SPIKES ARE SORTED! :)"
 
 if __name__ == "__main__":

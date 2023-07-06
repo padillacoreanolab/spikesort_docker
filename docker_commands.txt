@@ -16,3 +16,8 @@ docker pull spikesort:latest
 # running container
 docker run -it -d -–name <gradio-app-name> -p 7000:7000 <image_name:tag> 
  use ttp://localhost:7000 to access the app
+
+ # example of build and push commands
+docker build --no-cache -t spikesort:latest .
+docker tag spikesort padillacoreanolab/spikesort:latest
+docker push padillacoreanolab/spikesort:latest

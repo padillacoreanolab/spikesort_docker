@@ -50,9 +50,19 @@ def spikesort():
         child_spikesorting_output_directory = os.path.join(recording_output_directory,"ss_output")
         child_recording_output_directory = os.path.join(recording_output_directory,"preprocessed_recording_output")
 
+        print("Calculating LFP")
         # Make sure the recording is preprocessed appropriately
         # lazy preprocessing
         recording_filtered = sp.bandpass_filter(trodes_recording, freq_min=300, freq_max=6000)
+        # Do LFP
+        # Notch Filtering, keeping all the points that are within a certain frequency range
+        recording_notch = sp.notch_filter(recording_filtered, freq=60)
+        # We are not going to run the resampling step because it causes issues with saving to file?
+        # Resampling
+        recording_resample = sp.resample(recording_notch, resample_rate=1000)
+        print("Saving LFP result")
+        recording_resample.save_to_folder(name="lfp_preprocessing", folder=recording_output_directory, n_jobs=8)
+
         recording_preprocessed: si.BaseRecording = sp.whiten(recording_filtered, dtype='float32')
         spike_sorted_object = ms5.sorting_scheme2(
         recording=recording_preprocessed,
@@ -89,7 +99,7 @@ def spikesort():
               compute_pc_features=True, compute_amplitudes=True, remove_if_exists=False)
         print("PHY2 output Saved!")
 
-    return "SPIKES ARE SORTED! :)"
+    return "SPIKES ARE SORTED & LFP DONE! :)"
 
 if __name__ == "__main__":
     spikesort()

@@ -60,9 +60,9 @@ def spikesort():
         recording_notch = sp.notch_filter(recording_filtered, freq=60)
         # We are not going to run the resampling step because it causes issues with saving to file?
         # Resampling
-        recording_resample = sp.resample(recording_notch, resample_rate=1000)
+        # recording_resample = sp.resample(recording_notch, resample_rate=1000)
         print("Saving LFP result...")
-        recording_resample.save_to_folder(name="lfp_preprocessing", folder=child_lfp_output_directory, n_jobs=8)
+        recording_notch.save_to_folder(name="lfp_preprocessing", folder=child_lfp_output_directory, n_jobs=8)
         print("Spikesorting preprocessing...")
         recording_preprocessed: si.BaseRecording = sp.whiten(recording_filtered, dtype='float32')
         spike_sorted_object = ms5.sorting_scheme2(

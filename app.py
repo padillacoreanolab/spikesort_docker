@@ -49,8 +49,9 @@ def spikesort():
         os.makedirs(recording_output_directory, exist_ok=True)
         child_spikesorting_output_directory = os.path.join(recording_output_directory,"ss_output")
         child_recording_output_directory = os.path.join(recording_output_directory,"preprocessed_recording_output")
+        child_lfp_output_directory = os.path.join(recording_output_directory,"lfp_preprocessing_output")
 
-        print("Calculating LFP")
+        print("Calculating LFP...")
         # Make sure the recording is preprocessed appropriately
         # lazy preprocessing
         recording_filtered = sp.bandpass_filter(trodes_recording, freq_min=300, freq_max=6000)
@@ -60,9 +61,9 @@ def spikesort():
         # We are not going to run the resampling step because it causes issues with saving to file?
         # Resampling
         recording_resample = sp.resample(recording_notch, resample_rate=1000)
-        print("Saving LFP result")
-        recording_resample.save_to_folder(name="lfp_preprocessing", folder=recording_output_directory, n_jobs=8)
-
+        print("Saving LFP result...")
+        recording_resample.save_to_folder(name="lfp_preprocessing", folder=child_lfp_output_directory, n_jobs=8)
+        print("Spikesorting preprocessing...")
         recording_preprocessed: si.BaseRecording = sp.whiten(recording_filtered, dtype='float32')
         spike_sorted_object = ms5.sorting_scheme2(
         recording=recording_preprocessed,
@@ -73,7 +74,7 @@ def spikesort():
             # other parameters...
             )
                 )
-        print("SAVING VARIABLES...")
+        print("Saving variables...")
         spike_sorted_object_disk = spike_sorted_object.save(folder=child_spikesorting_output_directory)
         recording_preprocessed_disk = recording_preprocessed.save(folder=child_recording_output_directory)
 
@@ -86,7 +87,7 @@ def spikesort():
 
         waveform_output_directory = os.path.join(recording_output_directory, "waveforms")
 
-        print("EXTRACTING WAVEFORMS...")
+        print("Extracting Waveforms...")
         we_spike_sorted = si.extract_waveforms(recording=recording_preprocessed_disk, 
                                        sorting=spike_sorted_object_disk, folder=waveform_output_directory,
                                       ms_before=1, ms_after=1, progress_bar=True,

@@ -14,7 +14,8 @@ docker pull padillacoreanolab/spikesort:latest || goto catch
 echo Shutting Down Open Docker Containers With The Same Name ...
 docker stop spikesort_c
 docker rm spikesort_c
-
+echo.
+echo.
 set /p path_variable="FULL PATH TO THE PARENT FOLDER OF THE SPIKESORT DATA FOLDER: "
 
 echo Running Docker Container:  spikesort_c...

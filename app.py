@@ -104,8 +104,8 @@ def spikesort():
 if __name__ == "__main__":
     spikesort()
 
+# code used for web gui
 # input_text = gr.inputs.Textbox(label="Enter folder path")
 # output_text = gr.outputs.Textbox(label="Status")
 # interface = gr.Interface(fn=spikesort, inputs=input_text, outputs=output_text)
-
 # interface.launch(server_name="0.0.0.0", server_port=7000)

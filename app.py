@@ -89,10 +89,15 @@ def spikesort():
 
         print("Extracting Waveforms...")
         we_spike_sorted = si.extract_waveforms(recording=recording_preprocessed_disk, 
-                                       sorting=spike_sorted_object_disk, folder=waveform_output_directory,
-                                      ms_before=1, ms_after=1, progress_bar=True,
-                                      n_jobs=8, total_memory="1G", overwrite=True,
-                                       max_spikes_per_unit=2000)
+                                        sorting=spike_sorted_object_disk, 
+                                        folder=waveform_output_directory,
+                                        ms_before=1, 
+                                        ms_after=1, 
+                                        progress_bar=True,
+                                        n_jobs=8, 
+                                        total_memory="1G", 
+                                        overwrite=True,
+                                        max_spikes_per_unit=2000)
 
         phy_output_directory = os.path.join(recording_output_directory, "phy")
         print("Saving PHY2 output...")

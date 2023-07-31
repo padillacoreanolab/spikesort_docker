@@ -101,9 +101,21 @@ def spikesort():
 
         phy_output_directory = os.path.join(recording_output_directory, "phy")
         print("Saving PHY2 output...")
-        export_to_phy(we_spike_sorted, phy_output_directory,
-              compute_pc_features=True, compute_amplitudes=True, remove_if_exists=False)
+        export_to_phy(we_spike_sorted, 
+                      phy_output_directory,
+                      compute_pc_features=True, 
+                      compute_amplitudes=True, 
+                      remove_if_exists=False)
         print("PHY2 output Saved!")
+
+        # edit the params.py file os that it contains the correct realtive path
+        params_dir = os.path.join(phy_output_directory, "params.py")
+        with open(params_dir, 'r') as file:
+            lines = file.readlines()
+        lines[0] = "dat_path = r'./recording.dat'\n"
+        with open(params_dir, 'w') as file:
+            file.writelines(lines)
+
 
     return "SPIKES ARE SORTED & LFP DONE! :)"
 

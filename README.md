@@ -17,7 +17,7 @@ e.g. `C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys
 * `app.py` - This file contains the python script that handles the process and spike sorting.
 * `Dockerfile` - This file controls the building process of building a new docker image.
 * `nancyprobe_linearprobelargespace.prb or .txt` - This file represents a default example of the required .prb file that is required to run the spike sorting in the current setup.
-* `spikesort.bat` - This file is a script that pulls the docker image and controls the process of spinning up a container from the image. This file also launches the actual python script/app and is what is run when clicking on the shortcut of spike sorting.
+* `spikesort.bat` - This file is a script that pulls the docker image and controls the process of spinning up a container from the image. This file also launches the actual python script/app and is what is run when clicking on the shortcut of spike sorting. Technically this is also the only file you need to run the app on a windows machine with docker installed.
 * `synapse-spike.ico` - This is just an icon that can be used when creating a shortcut for the `spikesort.bat` file. 
 
 # How to build the docker image and push it to Docker Hub.

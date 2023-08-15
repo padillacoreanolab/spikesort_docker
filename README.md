@@ -3,14 +3,15 @@ A repo that contains all the code and guides for doing basic spike sorting in a 
 
 # How to run:
 1. Install Docker desktop
-2. Run the `spikesort.bat` file by double clicking it or run a shortcut of this file (Only works for windows machines, but can be expanded for Unix systems in the future)
-3. A command line terminal will run and show the following prompt:
+2. Launch Docker. Note, that all containers and images can be deleted from docker to reset it if necessary, no need to worry about deleting docker images as everything is backed up and pulled from Docker Hub automatically. 
+3. Run the `spikesort.bat` file by double clicking it or run a shortcut of this file (Only works for windows machines, but can be expanded for Unix systems in the future)
+4. A command line terminal will run and show the following prompt:
 ```
 FULL PATH TO THE PARENT FOLDER OF THE SPIKESORT DATA FOLDER:
 ```
 Copy and paste the path into the terminal of the folder that contains the `data` folder where all the spikesort input data is located. 
 e.g. `C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys` is a correct example. `C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys\data` is not.
-4. Press `Enter` and let it run.
+5. Press `Enter` and let it run.
 
 # What does each file do?
 * `app.py` - This file contains the python script that handles the process and spike sorting.

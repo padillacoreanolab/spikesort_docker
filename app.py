@@ -89,8 +89,8 @@ def spikesort():
             )
                 )
         print("Saving variables...")
-        spike_sorted_object_disk = spike_sorted_object.save(folder=child_spikesorting_output_directory) # ???
-        recording_preprocessed_disk = recording_preprocessed.save(folder=child_recording_output_directory) # ???
+        spike_sorted_object_disk = spike_sorted_object.save(folder=child_spikesorting_output_directory)  # ???
+        recording_preprocessed_disk = recording_preprocessed.save(folder=child_recording_output_directory)  # ???
 
         sw.plot_rasters(spike_sorted_object)
         plt.title(recording_basename)
@@ -113,18 +113,6 @@ def spikesort():
                                         overwrite=True,
                                         max_spikes_per_unit=2000)
 
-        # remove temp folder
-        for filename in os.listdir(child_recording_output_directory):
-            file_path = os.path.join(child_recording_output_directory, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                print('Failed to delete %s. Reason: %s' % (file_path, e))
-
-
         phy_output_directory = os.path.join(recording_output_directory, "phy")
         print("Saving PHY2 output...")
         export_to_phy(we_spike_sorted, 
@@ -142,18 +130,29 @@ def spikesort():
         with open(params_dir, 'w') as file:
             file.writelines(lines)
 
-        # do timestamp processing
-        data_folder_path = Path(f"{pwd}/data/")
-        files = os.listdir(data_folder_path)
-        videoTimeStamps_files = [f for f in files if f.endswith('.videoTimeStamps')]
-        if len(videoTimeStamps_files) == 1:
-            arr = read_camera_module_time_stamps(os.path.join(data_folder_path, videoTimeStamps_files[0]))
-            dfs = pd.DataFrame(arr[0])
-            dfs.to_csv(os.path.join(recording_output_directory,"timestaps.csv"))
-        else:
-            raise ValueError('There should be only one csv file in the folder')
+        # remove temp folder
+        # for filename in os.listdir(child_recording_output_directory):
+        #     file_path = os.path.join(child_recording_output_directory, filename)
+        #     try:
+        #         if os.path.isfile(file_path) or os.path.islink(file_path):
+        #             os.unlink(file_path)
+        #         elif os.path.isdir(file_path):
+        #             shutil.rmtree(file_path)
+        #     except Exception as e:
+        #         print('Failed to delete %s. Reason: %s' % (file_path, e))
+        if os.path.exists(child_recording_output_directory):
+            os.system(f"rm -rf {child_recording_output_directory}")
 
-    return "SPIKES ARE SORTED & LFP DONE! :)"
+    timestamp_filepath_glob = str(Path(f"{pwd}/data/**/*.videoTimeStamps"))
+    all_timestamp_files = glob.glob(timestamp_filepath_glob, recursive=True)
+    # do timestamp processing
+    for data_folder_path in all_timestamp_files:
+        arr = read_camera_module_time_stamps(data_folder_path)
+        dfs = pd.DataFrame(arr[0])
+        timestamps_file_name = str(Path(data_folder_path)).split('\\')[-1].split('.')[0]
+        dfs.to_csv(os.path.join(recording_output_directory, f"{timestamps_file_name}_timestaps.csv"))
+
+    return "SPIKES ARE SORTED, LFP DONE, AND TIMESTAMPS MADE! :)"
 
 
 if __name__ == "__main__":

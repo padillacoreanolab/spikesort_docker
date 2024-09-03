@@ -15,9 +15,9 @@ e.g. `C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys
 
 # Trouble Shooting
 Do you keep clicking the spikesort icon and things aren't doing what you want, here are a few trouble shooting options 
-step 1: spike sorting crashed on you half way thru, move sorted data files into a new folder (labeled done or something similar) and rename your proc folder. You do not want to resort already resorted data
-step 2: Open docker app, and try click the Spikesort desk top icon again. 
-step 3: Open the docker app, click the left most icon in the upper right hand corner and restart the docker app. Click spikesort desktop icon and try again. 
+- step 1: spike sorting crashed on you half way thru, move sorted data files into a new folder (labeled done or something similar) and rename your proc folder. You do not want to resort already resorted data
+- step 2: Open docker app, and try click the Spikesort desk top icon again. 
+- step 3: Open the docker app, click the left most icon in the upper right hand corner and restart the docker app. Click spikesort desktop icon and try again. 
 
 Specifically if the terminal prints out: 
  FULL PATH TO THE PARENT FOLDER OF THE SPIKESORT DATA FOLDER: "E:\social_mem_ephys_pilot2"

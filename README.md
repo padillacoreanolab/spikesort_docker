@@ -19,7 +19,7 @@ Do you keep clicking the spikesort icon and things aren't doing what you want, h
 - step 2: Open docker app, and try click the Spikesort desk top icon again. 
 - step 3: Open the docker app, click the left most icon in the upper right hand corner and restart the docker app. Click spikesort desktop icon and try again. 
 
-Specifically if the terminal prints out: 
+  - Specifically if the terminal prints out: 
  FULL PATH TO THE PARENT FOLDER OF THE SPIKESORT DATA FOLDER: "E:\social_mem_ephys_pilot2"
 Running Docker Container:  spikesort_c...
 docker: Error response from daemon: error while creating mount source path '/run/desktop/mnt/host/e/social_mem_ephys_pilot2': mkdir /run/desktop/mnt/host/e: file exists.

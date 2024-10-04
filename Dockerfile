@@ -19,6 +19,7 @@ RUN conda create -n spike_interface_0_97_1 python=3.9 --yes
 SHELL ["conda", "run", "-n", "spike_interface_0_97_1", "/bin/bash", "-c"]
 RUN pip install spikeinterface[full,widgets]==0.97.1
 RUN pip install --upgrade mountainsort5
+RUN pip install pytest-shutil
 RUN conda install -c edeno spectral_connectivity --yes
 RUN conda install -c anaconda gitpython -y
 RUN conda install -c conda-forge gradio -y

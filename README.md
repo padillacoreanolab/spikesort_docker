@@ -34,6 +34,9 @@ docker push padillacoreanolab/spikesort:latest
 ```
 When running the `spikesort.bat` file the docker image is pulled/updated from docker Hub. Thereafter a container is created running the `app.py` file inside the Conda environment from within the container. Note, that the docker image copies all the files in the root folder of this repo over into it when creating the image. When the container of the docker is spun up from the image it links a specified folder on the local computer to a path in the container named `/spikesort`. This should be kept in mind when modifying paths in the `app.py` file.
 
+Or simply run the update_docker_image.sh script:
+```bash update_docker_image.sh```
+
 
 # Proposed Possible Changes:
 * Use the [PHY2_Shortcut](https://github.com/padillacoreanolab/PHY2_shortcuts) as an example to run this app outside docker.

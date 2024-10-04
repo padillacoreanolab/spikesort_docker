@@ -29,6 +29,7 @@ from probeinterface import get_probe
 from probeinterface.plotting import plot_probe, plot_probe_group
 from probeinterface import write_prb, read_prb
 from pathlib import Path
+import shutil
 
 def spikesort():
     pwd = os.getcwd() + "/spikesort" # r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys"
@@ -88,6 +89,7 @@ def spikesort():
                                         overwrite=True,
                                         max_spikes_per_unit=2000)
 
+        shutil.rmtree(child_recording_output_directory)
         phy_output_directory = os.path.join(recording_output_directory, "phy")
         print("Saving PHY2 output...")
         export_to_phy(we_spike_sorted, 

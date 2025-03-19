@@ -70,8 +70,61 @@ conda install -c conda-forge gradio -y
 pip install chardet
 pip install cchardet
 ```
-2. Use the app.py file to run the code in the command line tool.
-
+2. Copy data from Dropbox to HiperGator.
+  1. install rclone on your local computer: https://rclone.org/downloads/
+  2. run on personal computer 
+  ```
+  rclone.exe authorize "dropbox"
+  ```
+  
+  crtl + click on link that terminal spits out and press agree, terminal will now spit out a token key, finish step 3 before copying and pasting it into the hipergator terminal
+  
+  3. open terminal in hipergator and run the following lines: 
+  ```
+  module load rclone
+  rclone config
+  ```
+  
+  - n) New remote
+  - name your dropbox
+  - Storage > 13 (type 13 (which is dropobx) and hit enter) 
+  - leave client_id and client_secret blank (aka press enter) 
+  - type n and click enter (No) for edit advanced config
+  - type n and click enter (No) for web broswer question
+  - copy and paste config token from local terminal into hipergator terminal
+  - click y and hit enter for default settings to finish
+  
+  if authentication breaks press choose: e) Edit existing remote 
+  4. find data on dropbox
+  ```
+  rclone ls pc-dropbox:"Padilla-Coreano Lab/path/to/data"
+  ```
+  5. copy data from dropdox
+  source = pc-dropbox
+  path ="path/to/folder"
+  run dry run first to confirm path and size of download 
+  
+  example of destination path
+  dest:path = ./data 
+  ```
+  rclone copy source:path dest:path --progress --dry-run
+  ```
+  then run it for reals
+  ```
+  rclone copy source:path dest:path --progress
+  ```
+  
+  example real command:
+  ```
+  rclone copy pc-dropbox:"Padilla-Coreano Lab/2024/Cum_SocialMemEphys_pilot2/Habituation_Dishabituation (phase 1)/data/cagemate" ./cagemate --progress --dry-run
+  ```
+  
+  or to upload data to dropbox: 
+  
+  ```
+  rclone copy ./same_lfp pc-dropbox:"Padilla-Coreano Lab/2024/Cum_SocialMemEphys_pilot2/Same_Diff (phase2)/lfp_data" --progress --dry-run
+  ```
+3. Use the app.py file to run the code in the command line tool.
 
 # Proposed Possible Changes:
 * Use the [PHY2_Shortcut](https://github.com/padillacoreanolab/PHY2_shortcuts) as an example to run this app outside docker.

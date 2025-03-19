@@ -53,6 +53,25 @@ When running the `spikesort.bat` file the docker image is pulled/updated from do
 Or simply run the update_docker_image.sh script:
 ```bash update_docker_image.sh```
 
+# How to run on HiperGator:
+1. Make a conda env for spikesort. It is important to make the envronment and install the packages in the following way. The whole reason we use docker is because the environment is so fragile.
+```bash
+# Create and activate the conda environment
+conda create -n spikesort python=3.9 --yes
+conda activate spikesort
+
+# Install required packages
+pip install spikeinterface[full,widgets]==0.97.1
+pip install --upgrade mountainsort5
+pip install pytest-shutil
+conda install -c edeno spectral_connectivity --yes
+conda install -c anaconda gitpython -y
+conda install -c conda-forge gradio -y
+pip install chardet
+pip install cchardet
+```
+2. Use the app.py file to run the code in the command line tool.
+
 
 # Proposed Possible Changes:
 * Use the [PHY2_Shortcut](https://github.com/padillacoreanolab/PHY2_shortcuts) as an example to run this app outside docker.

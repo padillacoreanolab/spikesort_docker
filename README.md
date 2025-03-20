@@ -1,33 +1,182 @@
-# spikesort_docker
-A repo that contains all the code and guides for doing basic spike sorting in a containerized terminal app using docker. 
+# spikesort_docker a SpikeSort Command Line Tool
 
-# How to run:
-1. Install Docker desktop
-2. Launch Docker. Note, that all containers and images can be deleted from docker to reset it if necessary, no need to worry about deleting docker images as everything is backed up and pulled from Docker Hub automatically. 
-3. Run the `spikesort.bat` file by double clicking it or run a shortcut of this file (Only works for windows machines, but can be expanded for Unix systems in the future)
-4. A command line terminal will run and show the following prompt:
+This Python-based command line tool performs spike sorting on electrophysiological recordings using the [SpikeInterface](https://github.com/SpikeInterface) framework. It processes recording files by applying bandpass filtering, whitening, spike sorting (with Kilosort4), waveform extraction, and finally exporting the results to Phy for manual curation. Full parameter control is provided through command line arguments.
+
+## Requirements
+
+- **Python 3.x**
+- Required Python packages:
+  - numpy
+  - pandas
+  - matplotlib
+  - spikeinterface (and its submodules)
+  - probeinterface
+- Other dependencies as specified in `requirements.txt` (if available)
+
+## Installation
+
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/yourusername/spikesort_cli.git
+   cd spikesort_cli
+   ```
+
+2. **Set Up a Virtual Environment (optional but recommended):**
+
+   ```bash
+   python -m venv env
+   source env/bin/activate      # On Windows: env\Scripts\activate
+   ```
+
+3. **Install Dependencies:**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## How to Run
+
+Execute the tool from the command line using the `spikesort.py` script. The only required argument is `--data-folder`, which specifies the path to the folder containing your recording files.
+
+### Basic Example
+
+```bash
+python spikesort.py --data-folder "/path/to/recordings"
 ```
-FULL PATH TO THE PARENT FOLDER OF THE SPIKESORT DATA FOLDER:
+
+This command recursively searches for recording files (with names ending in `merged.rec`) in the specified folder and processes them in batch mode. The processed output will be saved in the current directory unless you specify another location with `--output-folder`.
+
+## Command Line Arguments
+
+The tool offers a range of configurable parameters:
+
+### Input and Probe Configuration
+
+- **`--data-folder`** (Required):  
+  Path to the folder containing recording files (searches recursively).
+
+- **`--output-folder`** (Optional):  
+  Directory where processed output will be saved (default: current directory).
+
+- **`--prb-file`** (Optional):  
+  Path to a `.prb` file for probe configuration. If not provided, a default probe file is used.
+
+- **`--disable-batch`** (Optional):  
+  When set, only one recording file will be processed (batch processing disabled).
+
+- **`--recording-file`** (Optional):  
+  Specify a single recording file to process (used when batch processing is disabled).
+
+- **`--stream-id`** (Optional):  
+  Stream ID to use when reading recording files (default: `"trodes"`).
+
+### Preprocessing Parameters
+
+- **`--freq-min`** (Optional):  
+  Minimum frequency for bandpass filtering (default: `300` Hz).
+
+- **`--freq-max`** (Optional):  
+  Maximum frequency for bandpass filtering (default: `6000` Hz).
+
+- **`--whiten-dtype`** (Optional):  
+  Data type for whitening (default: `"float32"`).
+
+### Sorting Parameters
+
+- **`--sort-params`** (Optional):  
+  JSON string to override default sorting parameters (e.g., `'{"parameter_name": value}'`). Defaults to an empty JSON object (`{}`).
+
+- **`--force-cpu`** (Optional):  
+  Forces sorting to run on CPU even if a GPU is available.
+
+### Waveform Extraction Parameters
+
+- **`--ms-before`** (Optional):  
+  Milliseconds before spike for waveform extraction (default: `1`).
+
+- **`--ms-after`** (Optional):  
+  Milliseconds after spike for waveform extraction (default: `1`).
+
+- **`--n-jobs`** (Optional):  
+  Number of jobs for waveform extraction (default: `8`).
+
+- **`--total-memory`** (Optional):  
+  Total memory available for waveform extraction (default: `"1G"`).
+
+- **`--max-spikes-per-unit`** (Optional):  
+  Maximum spikes per unit for waveform extraction (default: `2000`).
+
+### Phy Export Parameters
+
+- **`--compute-pc-features`** (Optional):  
+  Compute PC features for Phy export (default: `True`).
+
+- **`--compute-amplitudes`** (Optional):  
+  Compute amplitudes for Phy export (default: `True`).
+
+- **`--remove-if-exists`** (Optional):  
+  Remove existing Phy export folder if it exists.
+
+## Example Usages
+
+### Batch Processing of Multiple Recordings
+
+```bash
+python spikesort.py --data-folder "/path/to/recordings" --output-folder "/path/to/output"
 ```
-Copy and paste the path into the terminal of the folder that contains the `data` folder where all the spikesort input data is located. 
-e.g. `C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys` is a correct example. `C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys\data` is not.
-5. Press `Enter` and let it run.
 
-# Trouble Shooting
-Do you keep clicking the spikesort icon and things aren't doing what you want, here are a few trouble shooting options 
-- step 1: spike sorting crashed on you half way thru, move sorted data files into a new folder (labeled done or something similar) and rename your proc folder. You do not want to resort already resorted data
-- step 2: Open docker app, and try click the Spikesort desk top icon again. 
-- step 3: Open the docker app, click the left most icon in the upper right hand corner and restart the docker app. Click spikesort desktop icon and try again. 
+This command searches the specified data folder recursively for files ending with `merged.rec` and processes them in batch.
 
-  - Specifically if the terminal prints out: 
- FULL PATH TO THE PARENT FOLDER OF THE SPIKESORT DATA FOLDER: "E:\social_mem_ephys_pilot2"
-Running Docker Container:  spikesort_c...
-docker: Error response from daemon: error while creating mount source path '/run/desktop/mnt/host/e/social_mem_ephys_pilot2': mkdir /run/desktop/mnt/host/e: file exists.
-Press any key to continue . . .
+### Processing a Single Recording
 
+```bash
+python spikesort.py --data-folder "/path/to/recordings" --disable-batch --recording-file "/path/to/recordings/sample_merged.rec"
+```
 
-.  
+This command disables batch processing and explicitly processes the provided recording file.
 
+### Advanced Configuration
+
+```bash
+python spikesort.py --data-folder "/path/to/recordings" \
+                    --prb-file "/path/to/probe.prb" \
+                    --sort-params '{"parameter_name": 123, "another_param": true}' \
+                    --force-cpu
+```
+
+This command uses a custom probe configuration, overrides default sorter parameters, and forces CPU processing.
+
+## Process Overview
+
+1. **Loading and Probe Configuration:**  
+   The tool loads recording files and attaches a probe configuration from a provided `.prb` file or a default file.
+
+2. **Preprocessing:**  
+   Recordings are bandpass filtered and whitened before spike sorting.
+
+3. **Spike Sorting:**  
+   Spike sorting is performed using Kilosort4. The tool automatically detects GPU availability unless CPU processing is forced.
+
+4. **Waveform Extraction:**  
+   Extracts waveforms from the sorted data, with customizable pre- and post-spike intervals.
+
+5. **Phy Export:**  
+   Exports the sorted results and waveforms to a format compatible with Phy for further manual curation.
+
+6. **Output Handling:**  
+   Processed data is saved in organized subdirectories (e.g., `proc`, `ss_output`, `phy`), and recordings that have already been processed are automatically skipped.
+
+## Additional Information
+
+- **GPU/CPU Detection:**  
+  The tool checks for GPU availability and uses it for spike sorting unless overridden by the `--force-cpu` flag.
+
+- **Batch vs. Single File Processing:**  
+  By default, the tool processes all recording files found in the data folder. Use `--disable-batch` and `--recording-file` to process a single file.
+
+- **Error Handling:**  
+  If a recording has already been processed (e.g., a Phy export folder exists), the tool will skip that recording to avoid duplicate work.
 
 # What does each file do?
 * `app.py` - This file contains the python script that handles the process and spike sorting.
@@ -57,82 +206,15 @@ Or simply run the update_docker_image.sh script:
 1. Make a conda env for spikesort. It is important to make the envronment and install the packages in the following way. The whole reason we use docker is because the environment is so fragile.
 ```bash
 # Create and activate the conda environment
-conda create -n spikesort python=3.9 --yes
+conda create -n spikesort python=3.12 --yes
 conda activate spikesort
 
 # Install required packages
-pip install spikeinterface[full,widgets]==0.97.1
-pip install --upgrade mountainsort5
-pip install pytest-shutil
-conda install -c edeno spectral_connectivity --yes
-conda install -c anaconda gitpython -y
-conda install -c conda-forge gradio -y
-pip install chardet
-pip install cchardet
+pip install spikeinterface==0.102.1
+pip install kilosort==4.0.30
 ```
-2. Copy data from Dropbox to HiperGator.
-  1. install rclone on your local computer: https://rclone.org/downloads/
-  2. run on personal computer 
-  ```
-  rclone.exe authorize "dropbox"
-  ```
-  
-  crtl + click on link that terminal spits out and press agree, terminal will now spit out a token key, finish step 3 before copying and pasting it into the hipergator terminal
-  
-  3. open terminal in hipergator and run the following lines: 
-  ```
-  module load rclone
-  rclone config
-  ```
-  
-  - n) New remote
-  - name your dropbox
-  - Storage > 13 (type 13 (which is dropobx) and hit enter) 
-  - leave client_id and client_secret blank (aka press enter) 
-  - type n and click enter (No) for edit advanced config
-  - type n and click enter (No) for web broswer question
-  - copy and paste config token from local terminal into hipergator terminal
-  - click y and hit enter for default settings to finish
-  
-  if authentication breaks press choose: e) Edit existing remote 
-  4. find data on dropbox
-  ```
-  rclone ls pc-dropbox:"Padilla-Coreano Lab/path/to/data"
-  ```
-  5. copy data from dropdox
-  source = pc-dropbox
-  path ="path/to/folder"
-  run dry run first to confirm path and size of download 
-  
-  example of destination path
-  dest:path = ./data 
-  ```
-  rclone copy source:path dest:path --progress --dry-run
-  ```
-  then run it for reals
-  ```
-  rclone copy source:path dest:path --progress
-  ```
-  
-  example real command:
-  ```
-  rclone copy pc-dropbox:"Padilla-Coreano Lab/2024/Cum_SocialMemEphys_pilot2/Habituation_Dishabituation (phase 1)/data/cagemate" ./cagemate --progress --dry-run
-  ```
-  
-  or to upload data to dropbox: 
-  
-  ```
-  rclone copy ./same_lfp pc-dropbox:"Padilla-Coreano Lab/2024/Cum_SocialMemEphys_pilot2/Same_Diff (phase2)/lfp_data" --progress --dry-run
-  ```
-3. Use the app.py file to run the code in the command line tool.
-
-# Proposed Possible Changes:
-* Use the [PHY2_Shortcut](https://github.com/padillacoreanolab/PHY2_shortcuts) as an example to run this app outside docker.
-* Use a Params.py file to give more various inputs to the processing functions.
-* Change it to be a command line run function with additional parameters.
-* Update the `app.py` file so that it is not as dependent on the /data/ folder and needs it as a requirement.
-* Add the default .prb file parameters directly into the code as a default for a .prb parameter.
-* It should have a parameter to disable batch processing.
-* It should not reprocess files when their results already exist in the output folder.
+2. Clone/Copy this repository on the Hipergator.
+3. Copy data from Dropbox to HiperGator using rclone
+5. Use the app.py file to run the code in the command line tool as usual.
 
 Code was written by @ChristopherMarais so contact him for any questions

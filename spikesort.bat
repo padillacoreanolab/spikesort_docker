@@ -20,7 +20,7 @@ docker rm spikesort_c >nul 2>&1
 
 echo.
 set /p HOST_DATA_FOLDER="Enter the full path to the data folder (the folder that contains recording files): "
-set /p OUTPUT_FOLDER="Enter --output-folder (directory for processed output): "
+set /p OUTPUT_FOLDER="Enter --output-folder (directory for processed output) (default: .): "
 set /p PRB_FILE="Enter --prb-file (path to .prb file) or leave blank for default: "
 set /p DISABLE_BATCH="Enter --disable-batch (true/false): "
 set /p RECORDING_FILE="Enter --recording-file (path to a single recording file) or leave blank: "

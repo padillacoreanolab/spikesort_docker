@@ -1,120 +1,304 @@
+#!/usr/bin/env python3
 import os
-import pickle
 import glob
+import argparse
+import shutil
 import warnings
-import git
-import imp
-import spikeinterface
-import time
 import json
-import spikeinterface.core
+from pathlib import Path
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
-import scipy.signal
-import _pickle as cPickle
 import matplotlib.pyplot as plt
-import spikeinterface as si  # import core only
+
+import spikeinterface as si
 import spikeinterface.extractors as se
-import spikeinterface.sorters as ss
 import spikeinterface.preprocessing as sp
-import spikeinterface.comparison as sc
 import spikeinterface.widgets as sw
-import spikeinterface.full as si
-import mountainsort5 as ms5
-from collections import defaultdict
-from datetime import datetime
-from matplotlib.pyplot import cm
+import spikeinterface.sorters as ss
 from spikeinterface.exporters import export_to_phy
-from probeinterface import get_probe
-from probeinterface.plotting import plot_probe, plot_probe_group
-from probeinterface import write_prb, read_prb
-from pathlib import Path
-import shutil
+from probeinterface import get_probe, read_prb
 
-def spikesort():
-    pwd = os.getcwd() + "/spikesort" # r"C:\Users\Padilla-Coreano\Desktop\GITHUB_REPOS\diff_fam_social_memory_ephys"
-    print(pwd)
-    prb_file_path = Path(f"{pwd}/data/nancyprobe_linearprobelargespace.prb")
-    probe_object = read_prb(prb_file_path)
-    probe_df = probe_object.to_dataframe()
-    print(probe_df)
-    recording_filepath_glob = str(Path(f"{pwd}/data/**/*merged.rec"))
-    all_recording_files = glob.glob(recording_filepath_glob, recursive=True)
-    
-    for recording_file in all_recording_files:
-        trodes_recording = se.read_spikegadgets(recording_file, stream_id="trodes")       
-        trodes_recording = trodes_recording.set_probes(probe_object)
-        recording_basename = os.path.basename(recording_file)
-        recording_output_directory = str(Path(f"{pwd}/proc/{recording_basename}"))
-        os.makedirs(recording_output_directory, exist_ok=True)
-        child_spikesorting_output_directory = os.path.join(recording_output_directory,"ss_output")
-        child_recording_output_directory = os.path.join(recording_output_directory,"preprocessed_recording_output")
+import signal
+import sys
 
-        # Make sure the recording is preprocessed appropriately
-        # lazy preprocessing
-        recording_filtered = sp.bandpass_filter(trodes_recording, freq_min=300, freq_max=6000)
-        print("Spikesorting preprocessing...")
-        recording_preprocessed: si.BaseRecording = sp.whiten(recording_filtered, dtype='float32')
-        spike_sorted_object = ms5.sorting_scheme2(
-        recording=recording_preprocessed,
-        sorting_parameters=ms5.Scheme2SortingParameters(
-            detect_sign=0,
-            phase1_detect_channel_radius=700,
-            detect_channel_radius=700,
-            # other parameters...
-            )
-                )
-        print("Saving variables...")
-        spike_sorted_object_disk = spike_sorted_object.save(folder=child_spikesorting_output_directory)
-        recording_preprocessed_disk = recording_preprocessed.save(folder=child_recording_output_directory)
+def handle_sigint(signum, frame):
+    print("KeyboardInterrupt (Crtl-C) received. Exiting gracefully...")
+    sys.exit(0)
 
-        sw.plot_rasters(spike_sorted_object)
+signal.signal(signal.SIGINT, handle_sigint)
+
+def is_gpu_available():
+    """
+    Check if a GPU is available.
+    Attempts to import cupy and torch to query GPU availability.
+    """
+    try:
+        import cupy
+        if cupy.cuda.runtime.getDeviceCount() > 0:
+            return True
+    except Exception:
+        pass
+    try:
+        import torch
+        if torch.cuda.is_available():
+            return True
+    except Exception:
+        pass
+    return False
+
+def process_recording(recording_file, output_folder, probe_object, sort_params,
+                      stream_id, freq_min, freq_max, whiten_dtype, force_cpu,
+                      ms_before, ms_after, n_jobs, total_memory, max_spikes_per_unit,
+                      compute_pc_features, compute_amplitudes, remove_if_exists):
+    """
+    Process a single recording file using supplied parameters.
+    """
+    recording_basename = os.path.basename(recording_file)
+    output_base = Path(output_folder) / "proc" / recording_basename
+
+    # Check for existing output: if the 'phy' folder exists, skip processing.
+    phy_output_directory = output_base / "phy"
+    if phy_output_directory.exists():
+        print(f"Skipping {recording_basename}: output folder already exists.")
+        return
+
+    print(f"\nProcessing recording: {recording_file}")
+    os.makedirs(output_base, exist_ok=True)
+    ss_output_dir = output_base / "ss_output"
+    preproc_rec_dir = output_base / "preprocessed_recording_output"
+    waveform_output_dir = output_base / "waveforms"
+
+    try:
+        # Load recording and attach probe using set_probe
+        recording_obj = se.read_spikegadgets(recording_file, stream_id=stream_id)
+        recording_obj = recording_obj.set_probes(probe_object)
+
+        # Preprocessing: bandpass filtering then whitening.
+        recording_filtered = sp.bandpass_filter(recording_obj, freq_min=freq_min, freq_max=freq_max)
+        recording_preprocessed = sp.whiten(recording_filtered, dtype=whiten_dtype)
+        # Re-attach the probe after processing.
+        recording_preprocessed = recording_preprocessed.set_probes(probe_object)
+
+        # Prepare sorter parameters.
+        # Remove 'detect_sign' and 'use_gpu', and instead set torch_device.
+        default_sort_params = {
+            "torch_device": "cuda" if is_gpu_available() and not force_cpu else "cpu"
+        }
+        default_sort_params.update(sort_params)
+
+        print("Running sorting with Kilosort4 via unified interface...")
+        # Use folder (instead of output_folder) for specifying the output directory.
+        spike_sorted = ss.run_sorter(
+            'kilosort4',
+            recording=recording_preprocessed,
+            folder=str(ss_output_dir),
+            **default_sort_params
+        )
+
+        # Save outputs.
+        spike_sorted_disk = spike_sorted.save(folder=str(ss_output_dir))
+        recording_preproc_disk = recording_preprocessed.save(folder=str(preproc_rec_dir))
+
+        # Plot raster and save figure.
+        sw.plot_rasters(spike_sorted)
         plt.title(recording_basename)
         plt.ylabel("Unit IDs")
-
-        plt.savefig(os.path.join(recording_output_directory, f"{recording_basename}_raster_plot.png"))
+        raster_plot_path = output_base / f"{recording_basename}_raster_plot.png"
+        plt.savefig(str(raster_plot_path))
         plt.close()
 
-        waveform_output_directory = os.path.join(recording_output_directory, "waveforms")
+        # Extract waveforms.
+        print("Extracting waveforms...")
+        we_spike_sorted = si.extract_waveforms(
+            recording=recording_preproc_disk,
+            sorting=spike_sorted_disk,
+            folder=str(waveform_output_dir),
+            ms_before=ms_before,
+            ms_after=ms_after,
+            progress_bar=True,
+            n_jobs=n_jobs,
+            total_memory=total_memory,
+            overwrite=True,
+            max_spikes_per_unit=max_spikes_per_unit
+        )
 
-        print("Extracting Waveforms...")
-        we_spike_sorted = si.extract_waveforms(recording=recording_preprocessed_disk, 
-                                        sorting=spike_sorted_object_disk, 
-                                        folder=waveform_output_directory,
-                                        ms_before=1, 
-                                        ms_after=1, 
-                                        progress_bar=True,
-                                        n_jobs=8, 
-                                        total_memory="1G", 
-                                        overwrite=True,
-                                        max_spikes_per_unit=2000)
+        # Delete preprocessed recording output to save disk space.
+        shutil.rmtree(str(preproc_rec_dir))
 
-        shutil.rmtree(child_recording_output_directory)
-        phy_output_directory = os.path.join(recording_output_directory, "phy")
-        print("Saving PHY2 output...")
-        export_to_phy(we_spike_sorted, 
-                      phy_output_directory,
-                      compute_pc_features=True, 
-                      compute_amplitudes=True, 
-                      remove_if_exists=False)
-        print("PHY2 output Saved!")
+        # Export results to Phy.
+        print("Exporting to Phy...")
+        export_to_phy(
+            we_spike_sorted,
+            str(phy_output_directory),
+            compute_pc_features=compute_pc_features,
+            compute_amplitudes=compute_amplitudes,
+            remove_if_exists=remove_if_exists
+        )
+        print("PHY export saved!")
 
-        # edit the params.py file os that it contains the correct realtive path
-        params_dir = os.path.join(phy_output_directory, "params.py")
-        with open(params_dir, 'r') as file:
-            lines = file.readlines()
-        lines[0] = "dat_path = r'./recording.dat'\n"
-        with open(params_dir, 'w') as file:
-            file.writelines(lines)
+        # Update params.py to include the correct relative path.
+        params_path = phy_output_directory / "params.py"
+        if params_path.exists():
+            with open(params_path, "r") as f:
+                lines = f.readlines()
+            lines[0] = "dat_path = r'./recording.dat'\n"
+            with open(params_path, "w") as f:
+                f.writelines(lines)
+        else:
+            print(f"Warning: params.py not found in {phy_output_directory}")
 
+        print(f"Finished processing {recording_basename}")
 
-    return "SPIKES ARE SORTED! :)"
+    except Exception as e:
+        if "No non-empty units" in str(e):
+            print(f"Skipping {recording_basename}: {str(e)}")
+        else:
+            print(f"Error processing {recording_basename}: {str(e)}")
+        return
+
+def str2bool(v):
+    """
+    Convert string to boolean.
+    """
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+       return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+       return False
+    else:
+       raise argparse.ArgumentTypeError('Boolean value expected.')
+
+def main():
+    parser = argparse.ArgumentParser(description="Spike Sorting Command Line Tool with full parameter control")
+    # Input and probe configuration.
+    parser.add_argument("--data-folder", type=str, required=True,
+                        help="Path to the folder containing recording files (searches recursively).")
+    parser.add_argument("--output-folder", type=str, default=".",
+                        help="Directory where processed output will be saved (default: current directory).")
+    parser.add_argument("--prb-file", type=str, default=None,
+                        help="Path to a .prb file for probe configuration. Uses default probe file if not provided.")
+    parser.add_argument("--disable-batch", action="store_true",
+                        help="If set, only one recording file will be processed (batch processing disabled).")
+    parser.add_argument("--recording-file", type=str, default=None,
+                        help="Specify a single recording file to process (used when batch processing is disabled).")
+    parser.add_argument("--stream-id", type=str, default="trodes",
+                        help="Stream ID to use when reading recording files (default: 'trodes').")
+
+    # Preprocessing parameters.
+    parser.add_argument("--freq-min", type=float, default=300,
+                        help="Minimum frequency for bandpass filtering (default: 300 Hz).")
+    parser.add_argument("--freq-max", type=float, default=6000,
+                        help="Maximum frequency for bandpass filtering (default: 6000 Hz).")
+    parser.add_argument("--whiten-dtype", type=str, default="float32",
+                        help="Data type for whitening (default: 'float32').")
+
+    # Sorting parameters.
+    parser.add_argument("--sort-params", type=str, default="{}",
+                        help="JSON string to override default sorting parameters (e.g., '{\"parameter_name\": value}').")
+    parser.add_argument("--force-cpu", action="store_true",
+                        help="If set, forces sorting to run on CPU even if a GPU is available.")
+
+    # Waveform extraction parameters.
+    parser.add_argument("--ms-before", type=float, default=1,
+                        help="Milliseconds before spike for waveform extraction (default: 1).")
+    parser.add_argument("--ms-after", type=float, default=1,
+                        help="Milliseconds after spike for waveform extraction (default: 1).")
+    parser.add_argument("--n-jobs", type=int, default=8,
+                        help="Number of jobs for waveform extraction (default: 8).")
+    parser.add_argument("--total-memory", type=str, default="1G",
+                        help="Total memory available for waveform extraction (default: '1G').")
+    parser.add_argument("--max-spikes-per-unit", type=int, default=2000,
+                        help="Maximum spikes per unit for waveform extraction (default: 2000).")
+
+    # Phy export parameters.
+    parser.add_argument("--compute-pc-features", type=str2bool, default=True,
+                        help="Compute PC features for Phy export (default: True).")
+    parser.add_argument("--compute-amplitudes", type=str2bool, default=True,
+                        help="Compute amplitudes for Phy export (default: True).")
+    parser.add_argument("--remove-if-exists", action="store_true",
+                        help="Remove existing Phy export folder if it exists.")
+
+    args = parser.parse_args()
+
+    try:
+        sort_params = json.loads(args.sort_params)
+    except json.JSONDecodeError as e:
+        print("Error parsing sort parameters. Please provide a valid JSON string.")
+        return
+
+    # Print GPU/CPU information.
+    gpu_available = is_gpu_available()
+    if args.force_cpu:
+        print("Forcing CPU for sorting.")
+    else:
+        if gpu_available:
+            print("GPU is available. Using GPU for sorting.")
+        else:
+            print("GPU not available. Using CPU for sorting.")
+
+    # Load probe configuration.
+    if args.prb_file:
+        prb_path = Path(args.prb_file)
+        if not prb_path.exists():
+            print(f"Provided prb file '{args.prb_file}' does not exist. Exiting.")
+            return
+        probe_object = read_prb(str(prb_path))
+        print(f"Using probe configuration from: {args.prb_file}")
+    else:
+        default_probe_path = Path(__file__).parent / "nancyprobe_linearprobelargespace.prb"
+        if not default_probe_path.exists():
+            print(f"Default probe file not found at: {default_probe_path}. Exiting.")
+            return
+        print(f"No prb file provided; using default probe file at: {default_probe_path}")
+        probe_object = read_prb(str(default_probe_path))
+    
+    # Determine which recordings to process.
+    data_folder = args.data_folder
+    if args.disable_batch:
+        if args.recording_file:
+            recording_files = [args.recording_file]
+        else:
+            recording_files = glob.glob(os.path.join(data_folder, "**/*merged.rec"), recursive=True)
+            if recording_files:
+                recording_files = [recording_files[0]]
+            else:
+                print("No recording files found in the provided data folder.")
+                return
+    else:
+        recording_files = glob.glob(os.path.join(data_folder, "**/*merged.rec"), recursive=True)
+        if not recording_files:
+            print("No recording files found in the provided data folder.")
+            return
+
+    print(f"Found {len(recording_files)} recording file(s) to process.")
+
+    for rec_file in recording_files:
+        if os.path.isdir(rec_file):
+            continue
+        process_recording(
+            recording_file=rec_file,
+            output_folder=args.output_folder,
+            probe_object=probe_object,
+            sort_params=sort_params,
+            stream_id=args.stream_id,
+            freq_min=args.freq_min,
+            freq_max=args.freq_max,
+            whiten_dtype=args.whiten_dtype,
+            force_cpu=args.force_cpu,
+            ms_before=args.ms_before,
+            ms_after=args.ms_after,
+            n_jobs=args.n_jobs,
+            total_memory=args.total_memory,
+            max_spikes_per_unit=args.max_spikes_per_unit,
+            compute_pc_features=args.compute_pc_features,
+            compute_amplitudes=args.compute_amplitudes,
+            remove_if_exists=args.remove_if_exists
+        )
+
+    print("\nBatch processing complete. SPIKES ARE SORTED! :)")
 
 if __name__ == "__main__":
-    spikesort()
-
-# code used for web gui
-# input_text = gr.inputs.Textbox(label="Enter folder path")
-# output_text = gr.outputs.Textbox(label="Status")
-# interface = gr.Interface(fn=spikesort, inputs=input_text, outputs=output_text)
-# interface.launch(server_name="0.0.0.0", server_port=7000)
+    main()

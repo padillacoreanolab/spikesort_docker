@@ -14,17 +14,11 @@ RUN apt-get update && \
 
 ENV PATH="/opt/miniconda3/bin:${PATH}"
 
-RUN conda create -n spike_interface_0_97_1 python=3.9 --yes
+RUN conda create -n spikesort python=3.12 --yes
 # activate conda env
-SHELL ["conda", "run", "-n", "spike_interface_0_97_1", "/bin/bash", "-c"]
-RUN pip install spikeinterface[full,widgets]==0.97.1
-RUN pip install --upgrade mountainsort5
-RUN pip install pytest-shutil
-RUN conda install -c edeno spectral_connectivity --yes
-RUN conda install -c anaconda gitpython -y
-RUN conda install -c conda-forge gradio -y
-RUN pip install chardet
-RUN pip install cchardet
+SHELL ["conda", "run", "-n", "spikesort", "/bin/bash", "-c"]
+RUN pip install spikeinterface[full,widgets]==0.102.1
+RUN pip install kilosort==4.0.30
 
 RUN conda init bash
 RUN echo ". ~/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc
@@ -32,4 +26,4 @@ RUN echo ". ~/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc
 # copy all files in the directory over to container
 COPY . .
 
-# CMD ["conda", "run", "-n", "spike_interface_0_97_1", "python", "app.py"]
+# CMD ["conda", "run", "-n", "spikesort", "python", "app.py"]

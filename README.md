@@ -4,45 +4,35 @@ This Python-based command line tool performs spike sorting on electrophysiologic
 
 ## Requirements
 
-- **Python 3.x**
+- **Python 3.12**
 - Required Python packages:
-  - numpy
-  - pandas
-  - matplotlib
-  - spikeinterface (and its submodules)
-  - probeinterface
-- Other dependencies as specified in `requirements.txt` (if available)
+  - spikeinterface==0.102.1
+  - kilosort==4.0.30
 
 ## Installation
 
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/yourusername/spikesort_cli.git
-   cd spikesort_cli
+   git clone https://github.com/padillacoreanolab/spikesort_docker.git
+   cd spikesort_docker
    ```
 
-2. **Set Up a Virtual Environment (optional but recommended):**
+2. **Install Dependencies:**
 
-   ```bash
-   python -m venv env
-   source env/bin/activate      # On Windows: env\Scripts\activate
-   ```
-
-3. **Install Dependencies:**
-
+We reccomend using conda for version control.
    ```bash
    pip install -r requirements.txt
    ```
 
 ## How to Run
 
-Execute the tool from the command line using the `spikesort.py` script. The only required argument is `--data-folder`, which specifies the path to the folder containing your recording files.
+Execute the tool from the command line using the `app.py` script. The only required argument is `--data-folder`, which specifies the path to the folder containing your recording files.
 
 ### Basic Example
 
 ```bash
-python spikesort.py --data-folder "/path/to/recordings"
+python app.py --data-folder "/path/to/recordings"
 ```
 
 This command recursively searches for recording files (with names ending in `merged.rec`) in the specified folder and processes them in batch mode. The processed output will be saved in the current directory unless you specify another location with `--output-folder`.
@@ -123,7 +113,7 @@ The tool offers a range of configurable parameters:
 ### Batch Processing of Multiple Recordings
 
 ```bash
-python spikesort.py --data-folder "/path/to/recordings" --output-folder "/path/to/output"
+python app.py --data-folder "/path/to/recordings" --output-folder "/path/to/output"
 ```
 
 This command searches the specified data folder recursively for files ending with `merged.rec` and processes them in batch.
@@ -131,7 +121,7 @@ This command searches the specified data folder recursively for files ending wit
 ### Processing a Single Recording
 
 ```bash
-python spikesort.py --data-folder "/path/to/recordings" --disable-batch --recording-file "/path/to/recordings/sample_merged.rec"
+python app.py --data-folder "/path/to/recordings" --disable-batch --recording-file "/path/to/recordings/sample_merged.rec"
 ```
 
 This command disables batch processing and explicitly processes the provided recording file.
@@ -139,7 +129,7 @@ This command disables batch processing and explicitly processes the provided rec
 ### Advanced Configuration
 
 ```bash
-python spikesort.py --data-folder "/path/to/recordings" \
+python app.py --data-folder "/path/to/recordings" \
                     --prb-file "/path/to/probe.prb" \
                     --sort-params '{"parameter_name": 123, "another_param": true}' \
                     --force-cpu

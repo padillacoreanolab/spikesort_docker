@@ -177,14 +177,19 @@ This command uses a custom probe configuration, overrides default sorter paramet
 
 # How to build the docker image and push it to Docker Hub.
 Currently this Repo contains the necessary code to build a docker image. The docker image contains a Conda environment wherein a python script is run. The python script that is run is the `app.py` file. This is the file that controls all the processing. When this file is changed a new version of the docker image ahs to be built and pushed to docker Hub before the app works on a local PC. To create the docker image run the following commands from within the spikesort_docker folder in the terminal:
+
+Build the docker Image (--no-cache can be excluded to cache previous builds to speed up the process)
 ```
-# Build the docker Image (--no-cache can be excluded to cache previous builds to speed up the process)
 docker build --no-cache -t spikesort:latest .
+```
 
-# Tag the Docker Iamge as the latest version
+Tag the Docker Image as the latest version
+```
 docker tag spikesort padillacoreanolab/spikesort:latest
+```
 
-# Push the Docker image to DockerHub
+Push the Docker image to DockerHub
+```
 docker push padillacoreanolab/spikesort:latest
 ```
 When running the `spikesort.bat` file the docker image is pulled/updated from docker Hub. Thereafter a container is created running the `app.py` file inside the Conda environment from within the container. Note, that the docker image copies all the files in the root folder of this repo over into it when creating the image. When the container of the docker is spun up from the image it links a specified folder on the local computer to a path in the container named `/spikesort`. This should be kept in mind when modifying paths in the `app.py` file.

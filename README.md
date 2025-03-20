@@ -1,13 +1,25 @@
-# spikesort_docker a SpikeSort Command Line Tool
+Below is an updated README that reflects the current functionality of your tool, including the enhanced batch file that prompts for every available parameter.
 
-This Python-based command line tool performs spike sorting on electrophysiological recordings using the [SpikeInterface](https://github.com/SpikeInterface) framework. It processes recording files by applying bandpass filtering, whitening, spike sorting (with Kilosort4), waveform extraction, and finally exporting the results to Phy for manual curation. Full parameter control is provided through command line arguments.
+---
+
+```markdown
+# spikesort_docker: A SpikeSort Command Line Tool in Docker
+
+**spikesort_docker** is a Python‐based command line tool that performs spike sorting on electrophysiological recordings using the [SpikeInterface](https://github.com/SpikeInterface) framework. The tool processes recording files by applying bandpass filtering, whitening, spike sorting (via Kilosort4), waveform extraction, and finally exporting the results to Phy for manual curation. It provides full parameter control through command line arguments.
+
+> **Note:** This tool is designed to be run within a Docker container. A Windows batch file (`spikesort.bat`) is provided to launch the container interactively so that you can input all the command line parameters.
+
+---
 
 ## Requirements
 
 - **Python 3.12**
+- **Conda** (recommended for environment/version management)
 - Required Python packages:
-  - spikeinterface==0.102.1
-  - kilosort==4.0.30
+  - `spikeinterface==0.102.1`
+  - `kilosort==4.0.30`
+
+---
 
 ## Installation
 
@@ -20,40 +32,70 @@ This Python-based command line tool performs spike sorting on electrophysiologic
 
 2. **Install Dependencies:**
 
-We reccomend using conda for version control.
+   It is recommended to use Conda for reproducibility. For example:
+
    ```bash
+   conda create -n spikesort python=3.12 --yes
+   conda activate spikesort
    pip install -r requirements.txt
    ```
 
+---
+
 ## How to Run
 
-Execute the tool from the command line using the `app.py` script. The only required argument is `--data-folder`, which specifies the path to the folder containing your recording files.
+### Running via Docker Using the Batch File
 
-### Basic Example
+The provided **spikesort.bat** file pulls the latest Docker image, stops any running container with the same name, and then launches a new container in interactive mode. Inside the container, the Conda environment is automatically activated and your custom parameters are passed to the `app.py` script.
 
-```bash
-python app.py --data-folder "/path/to/recordings"
-```
+**Example of the Batch File (`spikesort.bat`):**
 
-This command recursively searches for recording files (with names ending in `merged.rec`) in the specified folder and processes them in batch mode. The processed output will be saved in the current directory unless you specify another location with `--output-folder`.
+**Key Points:**
+
+- The batch file prompts you for every command line parameter available.
+- For the `--output-folder`, if you press Enter without typing anything, it defaults to the current directory (`.`).
+- The host data folder is mounted to `/spikesort` in the container.
+- Inside the container, the script automatically sources the Conda initialization script, activates the `spikesort` environment, and runs `app.py` with the provided parameters.
+
+### Running Without the Batch File
+
+If you prefer to run the tool manually, you can run the Docker container interactively:
+
+1. **Run the Container:**
+
+   ```bash
+   docker run -it --rm --name spikesort_c --gpus all -v "/path/to/your/data:/spikesort" padillacoreanolab/spikesort:latest bash
+   ```
+
+2. **Inside the Container:**
+
+   The container drops you into a shell. Activate the Conda environment and run the tool with your parameters:
+
+   ```bash
+   source /opt/miniconda3/etc/profile.d/conda.sh
+   conda activate spikesort
+   python app.py --data-folder /spikesort --output-folder . [other parameters...]
+   ```
+
+---
 
 ## Command Line Arguments
 
-The tool offers a range of configurable parameters:
+The tool offers a wide range of configurable parameters. Below is a summary of the available arguments:
 
 ### Input and Probe Configuration
 
 - **`--data-folder`** (Required):  
-  Path to the folder containing recording files (searches recursively).
+  Path to the folder containing recording files (searched recursively).
 
 - **`--output-folder`** (Optional):  
-  Directory where processed output will be saved (default: current directory).
+  Directory where processed output will be saved (default: current directory `.`).
 
 - **`--prb-file`** (Optional):  
   Path to a `.prb` file for probe configuration. If not provided, a default probe file is used.
 
 - **`--disable-batch`** (Optional):  
-  When set, only one recording file will be processed (batch processing disabled).
+  When set (true/false), only one recording file will be processed (batch processing disabled).
 
 - **`--recording-file`** (Optional):  
   Specify a single recording file to process (used when batch processing is disabled).
@@ -75,7 +117,8 @@ The tool offers a range of configurable parameters:
 ### Sorting Parameters
 
 - **`--sort-params`** (Optional):  
-  JSON string to override default sorting parameters (e.g., `'{"parameter_name": value}'`). Defaults to an empty JSON object (`{}`).
+  JSON string to override default sorting parameters (e.g., `{"parameter_name": value}`).  
+  Defaults to an empty JSON object (`{}`).
 
 - **`--force-cpu`** (Optional):  
   Forces sorting to run on CPU even if a GPU is available.
@@ -108,108 +151,108 @@ The tool offers a range of configurable parameters:
 - **`--remove-if-exists`** (Optional):  
   Remove existing Phy export folder if it exists.
 
-## Example Usages
-
-### Batch Processing of Multiple Recordings
-
-```bash
-python app.py --data-folder "/path/to/recordings" --output-folder "/path/to/output"
-```
-
-This command searches the specified data folder recursively for files ending with `merged.rec` and processes them in batch.
-
-### Processing a Single Recording
-
-```bash
-python app.py --data-folder "/path/to/recordings" --disable-batch --recording-file "/path/to/recordings/sample_merged.rec"
-```
-
-This command disables batch processing and explicitly processes the provided recording file.
-
-### Advanced Configuration
-
-```bash
-python app.py --data-folder "/path/to/recordings" \
-                    --prb-file "/path/to/probe.prb" \
-                    --sort-params '{"parameter_name": 123, "another_param": true}' \
-                    --force-cpu
-```
-
-This command uses a custom probe configuration, overrides default sorter parameters, and forces CPU processing.
+---
 
 ## Process Overview
 
-1. **Loading and Probe Configuration:**  
+1. **Loading & Probe Configuration:**  
    The tool loads recording files and attaches a probe configuration from a provided `.prb` file or a default file.
 
 2. **Preprocessing:**  
    Recordings are bandpass filtered and whitened before spike sorting.
 
 3. **Spike Sorting:**  
-   Spike sorting is performed using Kilosort4. The tool automatically detects GPU availability unless CPU processing is forced.
+   Spike sorting is performed using Kilosort4. GPU availability is automatically detected (unless overridden with `--force-cpu`).
 
 4. **Waveform Extraction:**  
-   Extracts waveforms from the sorted data, with customizable pre- and post-spike intervals.
+   Extracts waveforms from the sorted data using pre- and post-spike intervals defined by `--ms-before` and `--ms-after`.
 
 5. **Phy Export:**  
-   Exports the sorted results and waveforms to a format compatible with Phy for further manual curation.
+   Exports the sorted results and extracted waveforms to a format compatible with Phy for manual curation.
 
 6. **Output Handling:**  
-   Processed data is saved in organized subdirectories (e.g., `proc`, `ss_output`, `phy`), and recordings that have already been processed are automatically skipped.
+   Processed data is saved into organized subdirectories (e.g., `proc`, `ss_output`, `phy`), and recordings that have already been processed are skipped to avoid duplication.
 
-## Additional Information
+---
 
-- **GPU/CPU Detection:**  
-  The tool checks for GPU availability and uses it for spike sorting unless overridden by the `--force-cpu` flag.
+## File Structure Overview
 
-- **Batch vs. Single File Processing:**  
-  By default, the tool processes all recording files found in the data folder. Use `--disable-batch` and `--recording-file` to process a single file.
+- **`app.py`**  
+  Contains the Python code that manages the spike sorting process.
 
-- **Error Handling:**  
-  If a recording has already been processed (e.g., a Phy export folder exists), the tool will skip that recording to avoid duplicate work.
+- **`Dockerfile`**  
+  Defines the steps to build the Docker image, including setting up the Conda environment and installing required packages.
 
-# What does each file do?
-* `app.py` - This file contains the python script that handles the process and spike sorting.
-* `Dockerfile` - This file controls the building process of building a new docker image.
-* `nancyprobe_linearprobelargespace.prb or .txt` - This file represents a default example of the required .prb file that is required to run the spike sorting in the current setup.
-* `spikesort.bat` - This file is a script that pulls the docker image and controls the process of spinning up a container from the image. This file also launches the actual python script/app and is what is run when clicking on the shortcut of spike sorting. Technically this is also the only file you need to run the app on a windows machine with docker installed.
-* `synapse-spike.ico` - This is just an icon that can be used when creating a shortcut for the `spikesort.bat` file. 
+- **`nancyprobe_linearprobelargespace.prb` (or `.txt`)**  
+  A default example probe configuration file required for spike sorting.
 
-# How to build the docker image and push it to Docker Hub.
-Currently this Repo contains the necessary code to build a docker image. The docker image contains a Conda environment wherein a python script is run. The python script that is run is the `app.py` file. This is the file that controls all the processing. When this file is changed a new version of the docker image ahs to be built and pushed to docker Hub before the app works on a local PC. To create the docker image run the following commands from within the spikesort_docker folder in the terminal:
+- **`spikesort.bat`**  
+  A Windows batch file that logs into Docker, pulls the latest image, prompts for all command line parameters, and then launches a Docker container that runs `app.py`. This is the primary file for running the tool on Windows with Docker installed.
 
-Build the docker Image (--no-cache can be excluded to cache previous builds to speed up the process)
-```
-docker build --no-cache -t spikesort:latest .
-```
+- **`synapse-spike.ico`**  
+  An icon file that can be used when creating a desktop shortcut for `spikesort.bat`.
 
-Tag the Docker Image as the latest version
-```
-docker tag spikesort padillacoreanolab/spikesort:latest
-```
+---
 
-Push the Docker image to DockerHub
-```
-docker push padillacoreanolab/spikesort:latest
-```
-When running the `spikesort.bat` file the docker image is pulled/updated from docker Hub. Thereafter a container is created running the `app.py` file inside the Conda environment from within the container. Note, that the docker image copies all the files in the root folder of this repo over into it when creating the image. When the container of the docker is spun up from the image it links a specified folder on the local computer to a path in the container named `/spikesort`. This should be kept in mind when modifying paths in the `app.py` file.
+## Building and Pushing the Docker Image
 
-Or simply run the update_docker_image.sh script:
-```bash update_docker_image.sh```
+Whenever changes are made to the code (especially in `app.py`), you must rebuild and push the Docker image so that local runs (via `spikesort.bat`) use the updated version.
 
-# How to run on HiperGator:
-1. Make a conda env for spikesort. It is important to make the envronment and install the packages in the following way. The whole reason we use docker is because the environment is so fragile.
+1. **Build the Docker Image:**
+
+   ```bash
+   docker build --no-cache -t spikesort:latest .
+   ```
+
+2. **Tag the Docker Image:**
+
+   ```bash
+   docker tag spikesort padillacoreanolab/spikesort:latest
+   ```
+
+3. **Push the Docker Image to Docker Hub:**
+
+   ```bash
+   docker push padillacoreanolab/spikesort:latest
+   ```
+
+Alternatively, you can run the provided update script:
+
 ```bash
-# Create and activate the conda environment
-conda create -n spikesort python=3.12 --yes
-conda activate spikesort
-
-# Install required packages
-pip install spikeinterface==0.102.1
-pip install kilosort==4.0.30
+bash update_docker_image.sh
 ```
-2. Clone/Copy this repository on the Hipergator.
-3. Copy data from Dropbox to HiperGator using rclone
-5. Use the app.py file to run the code in the command line tool as usual.
 
-Code was written by @ChristopherMarais so contact him for any questions
+When running the `spikesort.bat` file, the Docker image is pulled/updated from Docker Hub and a container is spun up with your local data folder mounted at `/spikesort`.
+
+---
+
+## Running on HiperGator
+
+To run the tool on HiperGator:
+
+1. **Create the Conda Environment:**
+
+   ```bash
+   conda create -n spikesort python=3.12 --yes
+   conda activate spikesort
+   pip install spikeinterface==0.102.1
+   pip install kilosort==4.0.30
+   ```
+
+2. **Clone or Copy the Repository to HiperGator.**
+
+3. **Copy Data from Dropbox Using rclone.**
+
+4. **Run the Tool:**
+
+   Use the `app.py` file from the command line as usual, supplying your parameters.
+
+---
+
+## Credits
+
+Code was written by [@ChristopherMarais](https://github.com/ChristopherMarais). For any questions or support, please contact him.
+
+```
+
+---

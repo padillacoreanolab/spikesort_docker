@@ -39,11 +39,40 @@ set /p COMPUTE_PC_FEATURES="Enter --compute-pc-features (true/false): "
 set /p COMPUTE_AMPLITUDES="Enter --compute-amplitudes (true/false): "
 set /p REMOVE_IF_EXISTS="Enter --remove-if-exists (true/false): "
 
+:: Process boolean parameters:
+:: For store_true flags, only include the flag if the user enters "true" (ignoring case).
+if /i "%DISABLE_BATCH%"=="true" (
+    set "DISABLE_ARG=--disable-batch"
+) else (
+    set "DISABLE_ARG="
+)
+if /i "%FORCE_CPU%"=="true" (
+    set "FORCE_ARG=--force-cpu"
+) else (
+    set "FORCE_ARG="
+)
+if /i "%REMOVE_IF_EXISTS%"=="true" (
+    set "REMOVE_ARG=--remove-if-exists"
+) else (
+    set "REMOVE_ARG="
+)
+
+:: Process optional arguments that expect a value:
+if "%PRB_FILE%"=="" (
+    set "PRB_ARG="
+) else (
+    set "PRB_ARG=--prb-file \"%PRB_FILE%\""
+)
+if "%RECORDING_FILE%"=="" (
+    set "REC_ARG="
+) else (
+    set "REC_ARG=--recording-file \"%RECORDING_FILE%\""
+)
+
 echo.
 echo Running Docker container with your parameters...
 
-:: Run Docker container in interactive mode with conda auto-activation and pass the parameters.
-docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" padillacoreanolab/spikesort:latest bash -c "source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"%OUTPUT_FOLDER%\" --prb-file %PRB_FILE% --disable-batch %DISABLE_BATCH% --recording-file %RECORDING_FILE% --stream-id %STREAM_ID% --freq-min %FREQ_MIN% --freq-max %FREQ_MAX% --whiten-dtype %WHITEN_DTYPE% --sort-params \"%SORT_PARAMS%\" --force-cpu %FORCE_CPU% --ms-before %MS_BEFORE% --ms-after %MS_AFTER% --n-jobs %N_JOBS% --total-memory %TOTAL_MEMORY% --max-spikes-per-unit %MAX_SPIKES% --compute-pc-features %COMPUTE_PC_FEATURES% --compute-amplitudes %COMPUTE_AMPLITUDES% --remove-if-exists %REMOVE_IF_EXISTS%"
+docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" padillacoreanolab/spikesort:latest bash -c "source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"%OUTPUT_FOLDER%\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --max-spikes-per-unit \"%MAX_SPIKES%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\" %REMOVE_ARG%"
 
 echo.
 echo Container finished. Press any key to exit...

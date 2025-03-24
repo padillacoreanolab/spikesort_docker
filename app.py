@@ -222,6 +222,12 @@ def main():
                         help="Remove existing Phy export folder if it exists.")
 
     args = parser.parse_args()
+    
+    if args.recording_file == "":
+        args.recording_file = None
+
+    if args.prb_file == "":
+        args.prb_file = None
 
     try:
         sort_params = json.loads(args.sort_params)

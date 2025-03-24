@@ -12,7 +12,7 @@ RUN apt-get update && \
     bash Miniconda3-latest-Linux-x86_64.sh -b && \
     rm -f Miniconda3-latest-Linux-x86_64.sh
 
-ENV PATH="/opt/miniconda3/bin:${PATH}"
+ENV PATH="/root/miniconda3/bin:${PATH}"
 
 RUN conda create -n spikesort python=3.12 --yes
 # activate conda env

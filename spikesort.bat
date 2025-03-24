@@ -39,6 +39,12 @@ set /p COMPUTE_PC_FEATURES="Enter --compute-pc-features (true/false) (default: T
 set /p COMPUTE_AMPLITUDES="Enter --compute-amplitudes (true/false) (default: True): "
 set /p REMOVE_IF_EXISTS="Enter --remove-if-exists (true/false): "
 
+:: Convert backslashes to forward slashes in paths to avoid unicode escape issues.
+set "HOST_DATA_FOLDER=%HOST_DATA_FOLDER:\=/%"
+set "OUTPUT_FOLDER=%OUTPUT_FOLDER:\=/%"
+set "PRB_FILE=%PRB_FILE:\=/%"
+set "RECORDING_FILE=%RECORDING_FILE:\=/%"
+
 :: Set default values if inputs are empty
 if "%OUTPUT_FOLDER%"=="" set "OUTPUT_FOLDER=."
 if "%STREAM_ID%"=="" set "STREAM_ID=trodes"
@@ -55,7 +61,6 @@ if "%COMPUTE_PC_FEATURES%"=="" set "COMPUTE_PC_FEATURES=True"
 if "%COMPUTE_AMPLITUDES%"=="" set "COMPUTE_AMPLITUDES=True"
 
 :: Process boolean parameters:
-:: For store_true flags, only include the flag if the user enters "true" (ignoring case).
 if /i "%DISABLE_BATCH%"=="true" (
     set "DISABLE_ARG=--disable-batch"
 ) else (

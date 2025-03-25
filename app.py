@@ -139,7 +139,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
             progress_bar=True,
             n_jobs=n_jobs,
             total_memory=total_memory,
-            overwrite=True,
+            overwrite=None,  # Updated: use None as required by the new version.
             max_spikes_per_unit=max_spikes_per_unit
         )
         print("Waveform extraction complete. Data saved to:", str(waveform_output_dir))

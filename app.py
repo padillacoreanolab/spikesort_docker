@@ -52,7 +52,7 @@ def is_gpu_available():
 
 def process_recording(recording_file, output_folder, probe_object, sort_params,
                       stream_id, freq_min, freq_max, whiten_dtype, force_cpu,
-                      ms_before, ms_after, n_jobs, total_memory, max_spikes_per_unit,
+                      ms_before, ms_after, n_jobs, total_memory,
                       compute_pc_features, compute_amplitudes):
     """
     Process a single recording file using supplied parameters.
@@ -128,7 +128,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         plt.close()
         print("Raster plot saved at:", raster_plot_path)
 
-        # Extract waveforms using the new sorting analyzer
+        # Extract waveforms using the new sorting analyzer (without max_spikes_per_unit)
         print("Extracting waveforms...")
         sorting_analyzer = si.create_sorting_analyzer(
             recording=recording_preproc_disk,
@@ -139,8 +139,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
             progress_bar=True,
             n_jobs=n_jobs,
             total_memory=total_memory,
-            overwrite=True,
-            max_spikes_per_unit=max_spikes_per_unit
+            overwrite=True
         )
         print("Waveform extraction complete. Data saved to:", str(waveform_output_dir))
 
@@ -233,8 +232,6 @@ def main():
                         help="Number of jobs for waveform extraction (default: 8).")
     parser.add_argument("--total-memory", type=str, default="1G",
                         help="Total memory available for waveform extraction (default: '1G').")
-    parser.add_argument("--max-spikes-per-unit", type=int, default=2000,
-                        help="Maximum spikes per unit for waveform extraction (default: 2000).")
 
     # Phy export parameters.
     parser.add_argument("--compute-pc-features", type=str2bool, default=True,
@@ -319,7 +316,6 @@ def main():
             ms_after=args.ms_after,
             n_jobs=args.n_jobs,
             total_memory=args.total_memory,
-            max_spikes_per_unit=args.max_spikes_per_unit,
             compute_pc_features=args.compute_pc_features,
             compute_amplitudes=args.compute_amplitudes
         )

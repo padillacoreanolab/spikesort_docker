@@ -28,12 +28,11 @@ set /p FREQ_MIN="Enter --freq-min (default 300): "
 set /p FREQ_MAX="Enter --freq-max (default 6000): "
 set /p WHITEN_DTYPE="Enter --whiten-dtype (default 'float32'): "
 set /p SORT_PARAMS="Enter --sort-params (JSON string, e.g., {\"param\":123}) (default: {}): "
-set /p FORCE_CPU="Enter --force-cpu (true/false) (default: false): "
+set /p FORCE_CPU="Enter --force-cpu (true/false): "
 set /p MS_BEFORE="Enter --ms-before (default 1): "
 set /p MS_AFTER="Enter --ms-after (default 1): "
 set /p N_JOBS="Enter --n-jobs (default 8): "
 set /p TOTAL_MEMORY="Enter --total-memory (default '1G'): "
-set /p MAX_SPIKES="Enter --max-spikes-per-unit (default 2000): "
 set /p COMPUTE_PC_FEATURES="Enter --compute-pc-features (true/false) (default: True): "
 set /p COMPUTE_AMPLITUDES="Enter --compute-amplitudes (true/false) (default: True): "
 
@@ -54,7 +53,6 @@ if "%MS_BEFORE%"=="" set "MS_BEFORE=1"
 if "%MS_AFTER%"=="" set "MS_AFTER=1"
 if "%N_JOBS%"=="" set "N_JOBS=8"
 if "%TOTAL_MEMORY%"=="" set "TOTAL_MEMORY=1G"
-if "%MAX_SPIKES%"=="" set "MAX_SPIKES=2000"
 if "%COMPUTE_PC_FEATURES%"=="" set "COMPUTE_PC_FEATURES=True"
 if "%COMPUTE_AMPLITUDES%"=="" set "COMPUTE_AMPLITUDES=True"
 
@@ -87,7 +85,7 @@ echo Running Docker container with your parameters...
 
 :: Run Docker with both data and output folders mounted.
 :: Note: The added "chmod -R 777 /output &&" ensures that /output is writable.
-docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" -v "%OUTPUT_FOLDER%:/output" padillacoreanolab/spikesort:latest bash -c "chmod -R 777 /output && source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"/output\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --max-spikes-per-unit \"%MAX_SPIKES%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\""
+docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" -v "%OUTPUT_FOLDER%:/output" padillacoreanolab/spikesort:latest bash -c "chmod -R 777 /output && source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"/output\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\""
 
 echo.
 echo Container finished. Press any key to exit...

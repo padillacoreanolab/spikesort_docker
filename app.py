@@ -20,9 +20,6 @@ import spikeinterface.sorters as ss
 from spikeinterface.exporters import export_to_phy
 from probeinterface import get_probe, read_prb
 
-# Import the WaveformExtractor
-from spikeinterface import WaveformExtractor
-
 import signal
 import sys
 
@@ -60,7 +57,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
                       random_spikes_max, pc_n_components, pc_mode, spike_amp_peak_sign):
     """
     Process a single recording file using supplied parameters.
-    Each recording’s outputs will be stored in a subfolder under the user-specified
+    Each recording's outputs will be stored in a subfolder under the user-specified
     output folder (structure: <output_folder>/proc/<recording_basename>/).
     """
     recording_basename = os.path.basename(recording_file)
@@ -132,24 +129,24 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         plt.close()
         print("Raster plot saved at:", raster_plot_path)
 
-        # --- Replace SortingAnalyzer with WaveformExtractor ---
-        print("Creating WaveformExtractor (defaults: ms_before=%s, ms_after=%s, max_spikes_per_unit=%d)..." %
-              (ms_before, ms_after, random_spikes_max))
-        we = WaveformExtractor.create(
+        # --- Use the new waveform extraction API ---
+        print("Extracting waveforms using si.extract_waveforms()...")
+        we = si.extract_waveforms(
             recording=recording_preproc_disk,
             sorting=spike_sorted_disk,
             folder=str(waveform_output_dir),
             ms_before=ms_before,
             ms_after=ms_after,
-            max_spikes_per_unit=random_spikes_max
+            max_spikes_per_unit=random_spikes_max,
+            n_jobs=n_jobs,
+            total_memory=total_memory,
+            overwrite=True
         )
-        print("WaveformExtractor created.")
-
-        print("Extracting waveforms...")
+        print("Waveform extraction initiated...")
         we.extract_waveforms()
         print("Waveforms extraction complete.")
 
-        # Compute additional extensions if desired:
+        # Compute additional extensions if desired.
         print("Computing principal components (default: n_components=%d, mode='%s')..." % (pc_n_components, pc_mode))
         we.compute_principal_components(n_components=pc_n_components, mode=pc_mode)
         print("Principal components computed with n_components=%d and mode='%s'.\n" % (pc_n_components, pc_mode))

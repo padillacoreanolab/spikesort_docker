@@ -112,11 +112,11 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
 
         # Save outputs.
         print("Saving spike sorted output to disk...")
-        spike_sorted_disk = spike_sorted.save(folder=str(ss_output_dir), overwrite=True)
+        spike_sorted_disk = spike_sorted.save(folder=str(ss_output_dir), overwrite=None)
         print("Spike sorted output saved to:", ss_output_dir)
 
         print("Saving preprocessed recording to disk...")
-        recording_preproc_disk = recording_preprocessed.save(folder=str(preproc_rec_dir), overwrite=True)
+        recording_preproc_disk = recording_preprocessed.save(folder=str(preproc_rec_dir), overwrite=None)
         print("Preprocessed recording saved to:", preproc_rec_dir)
 
         # Plot raster and save figure.
@@ -140,7 +140,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
             max_spikes_per_unit=random_spikes_max,
             n_jobs=n_jobs,
             total_memory=total_memory,
-            overwrite=True
+            overwrite=None
         )
         print("Waveform extraction initiated...")
         we.extract_waveforms()

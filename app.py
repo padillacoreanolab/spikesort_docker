@@ -53,7 +53,8 @@ def is_gpu_available():
 def process_recording(recording_file, output_folder, probe_object, sort_params,
                       stream_id, freq_min, freq_max, whiten_dtype, force_cpu,
                       ms_before, ms_after, n_jobs, total_memory,
-                      compute_pc_features, compute_amplitudes):
+                      compute_pc_features, compute_amplitudes,
+                      random_spikes_max, pc_n_components, pc_mode, spike_amp_peak_sign):
     """
     Process a single recording file using supplied parameters.
     Each recording’s outputs will be stored in a subfolder under the user-specified
@@ -128,8 +129,8 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         plt.close()
         print("Raster plot saved at:", raster_plot_path)
 
-        # Extract waveforms using the new sorting analyzer (without max_spikes_per_unit)
-        print("Extracting waveforms...")
+        # Create the SortingAnalyzer for post-processing
+        print("Extracting waveforms using SortingAnalyzer...")
         sorting_analyzer = si.create_sorting_analyzer(
             recording=recording_preproc_disk,
             sorting=spike_sorted_disk,
@@ -141,16 +142,35 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
             total_memory=total_memory,
             overwrite=True
         )
-        print("Running waveforms analysis...")
-        sorting_analyzer.run_analysis("waveforms")
 
-        print("Running templates analysis...")
-        sorting_analyzer.run_analysis("templates")
-        
+        # 1. Compute random spikes
+        print("Computing random spikes (default: max_spikes_per_unit=%d)..." % random_spikes_max)
+        sorting_analyzer.compute("random_spikes", max_spikes_per_unit=random_spikes_max)
+        print("Random spikes computed with max_spikes_per_unit =", random_spikes_max, "\n")
+
+        # 2. Compute waveforms
+        print("Computing waveforms (default: ms_before=%s, ms_after=%s, n_jobs=%s, total_memory='%s')..." %
+              (ms_before, ms_after, n_jobs, total_memory))
+        sorting_analyzer.compute("waveforms", ms_before=ms_before, ms_after=ms_after, n_jobs=n_jobs, total_memory=total_memory)
+        print("Waveforms computed with ms_before=%s, ms_after=%s, n_jobs=%s, total_memory = '%s'.\n" %
+              (ms_before, ms_after, n_jobs, total_memory))
+
+        # 3. Compute templates
+        print("Computing templates (default: operators=['average'])...")
+        sorting_analyzer.compute("templates")
+        print("Templates computed with default parameters (operators=['average']).\n")
+
+        # 4. Compute principal components (optional for Phy export)
+        print("Computing principal components (default: n_components=%d, mode='%s')..." % (pc_n_components, pc_mode))
+        sorting_analyzer.compute("principal_components", n_components=pc_n_components, mode=pc_mode)
+        print("Principal components computed with n_components=%d and mode='%s'.\n" % (pc_n_components, pc_mode))
+
+        # 5. Compute spike amplitudes (optional for Phy export)
+        print("Computing spike amplitudes (default: peak_sign='%s')..." % spike_amp_peak_sign)
+        sorting_analyzer.compute("spike_amplitudes", peak_sign=spike_amp_peak_sign)
+        print("Spike amplitudes computed with peak_sign='%s'.\n" % spike_amp_peak_sign)
+
         print("Waveform extraction complete. Data saved to:", str(waveform_output_dir))
-
-        # Delete preprocessed recording output to save disk space.
-        shutil.rmtree(str(preproc_rec_dir))
 
         # Export results to Phy using the sorting analyzer
         print("Exporting to Phy...")
@@ -245,6 +265,16 @@ def main():
     parser.add_argument("--compute-amplitudes", type=str2bool, default=True,
                         help="Compute amplitudes for Phy export (default: True).")
 
+    # New post-processing extension parameters.
+    parser.add_argument("--random-spikes-max", type=int, default=2000,
+                        help="Max spikes per unit for random spikes computation (default: 2000).")
+    parser.add_argument("--pc-n-components", type=int, default=3,
+                        help="Number of principal components (default: 3).")
+    parser.add_argument("--pc-mode", type=str, default="by_channel_local",
+                        help="PCA mode (default: 'by_channel_local').")
+    parser.add_argument("--spike-amp-peak-sign", type=str, default="neg",
+                        help="Peak sign for spike amplitude computation (default: 'neg').")
+
     args = parser.parse_args()
     
     if args.recording_file == "":
@@ -323,10 +353,16 @@ def main():
             n_jobs=args.n_jobs,
             total_memory=args.total_memory,
             compute_pc_features=args.compute_pc_features,
-            compute_amplitudes=args.compute_amplitudes
+            compute_amplitudes=args.compute_amplitudes,
+            random_spikes_max=args.random_spikes_max,
+            pc_n_components=args.pc_n_components,
+            pc_mode=args.pc_mode,
+            spike_amp_peak_sign=args.spike_amp_peak_sign
         )
 
     print("\nBatch processing complete. SPIKES ARE SORTED! :)")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    import multiprocessing as mp
+    mp.set_start_method('fork', force=True)
     main()

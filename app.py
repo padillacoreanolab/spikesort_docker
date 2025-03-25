@@ -149,13 +149,11 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         print("Random spikes computed with max_spikes_per_unit =", random_spikes_max, "\n")
 
         # 2. Compute waveforms
-        # print("Computing waveforms (default: ms_before=%s, ms_after=%s, n_jobs=%s, total_memory='%s')..." %
-        #       (ms_before, ms_after, n_jobs, total_memory))
-        # sorting_analyzer.compute("waveforms", ms_before=ms_before, ms_after=ms_after, n_jobs=n_jobs, total_memory=total_memory)
-        # print("Waveforms computed with ms_before=%s, ms_after=%s, n_jobs=%s, total_memory = '%s'.\n" %
-        #       (ms_before, ms_after, n_jobs, total_memory))
-        
-        sorting_analyzer.compute("waveforms", n_jobs=1, total_memory=total_memory)
+        print("Computing waveforms (default: ms_before=%s, ms_after=%s, n_jobs=%s, total_memory='%s')..." %
+              (ms_before, ms_after, n_jobs, total_memory))
+        sorting_analyzer.compute("waveforms", ms_before=ms_before, ms_after=ms_after, n_jobs=n_jobs, total_memory=total_memory)
+        print("Waveforms computed with ms_before=%s, ms_after=%s, n_jobs=%s, total_memory = '%s'.\n" %
+              (ms_before, ms_after, n_jobs, total_memory))
 
         # 3. Compute templates
         print("Computing templates (default: operators=['average'])...")
@@ -268,8 +266,8 @@ def main():
                         help="Compute amplitudes for Phy export (default: True).")
 
     # New post-processing extension parameters.
-    parser.add_argument("--random-spikes-max", type=int, default=2000,
-                        help="Max spikes per unit for random spikes computation (default: 2000).")
+    parser.add_argument("--random-spikes-max", type=int, default=200,
+                        help="Max spikes per unit for random spikes computation (default: 200).")
     parser.add_argument("--pc-n-components", type=int, default=3,
                         help="Number of principal components (default: 3).")
     parser.add_argument("--pc-mode", type=str, default="by_channel_local",

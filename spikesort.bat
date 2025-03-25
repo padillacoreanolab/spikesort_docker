@@ -37,7 +37,7 @@ set /p COMPUTE_PC_FEATURES="Enter --compute-pc-features (true/false) (default: T
 set /p COMPUTE_AMPLITUDES="Enter --compute-amplitudes (true/false) (default: True): "
 
 :: New extension parameters:
-set /p RANDOM_SPIKES_MAX="Enter --random-spikes-max (default 2000): "
+set /p RANDOM_SPIKES_MAX="Enter --random-spikes-max (default 200): "
 set /p PC_N_COMPONENTS="Enter --pc-n-components (default 3): "
 set /p PC_MODE="Enter --pc-mode (default 'by_channel_local'): "
 set /p SPIKE_AMP_PEAK_SIGN="Enter --spike-amp-peak-sign (default 'neg'): "
@@ -61,7 +61,7 @@ if "%N_JOBS%"=="" set "N_JOBS=8"
 if "%TOTAL_MEMORY%"=="" set "TOTAL_MEMORY=16G"
 if "%COMPUTE_PC_FEATURES%"=="" set "COMPUTE_PC_FEATURES=True"
 if "%COMPUTE_AMPLITUDES%"=="" set "COMPUTE_AMPLITUDES=True"
-if "%RANDOM_SPIKES_MAX%"=="" set "RANDOM_SPIKES_MAX=2000"
+if "%RANDOM_SPIKES_MAX%"=="" set "RANDOM_SPIKES_MAX=200"
 if "%PC_N_COMPONENTS%"=="" set "PC_N_COMPONENTS=3"
 if "%PC_MODE%"=="" set "PC_MODE=by_channel_local"
 if "%SPIKE_AMP_PEAK_SIGN%"=="" set "SPIKE_AMP_PEAK_SIGN=neg"

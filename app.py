@@ -69,9 +69,16 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
 
     print(f"\nProcessing recording: {recording_file}")
     os.makedirs(output_base, exist_ok=True)
+    
+    # Define directories for sorter output and preprocessed recording.
     ss_output_dir = output_base / "ss_output"
     preproc_rec_dir = output_base / "preprocessed_recording_output"
     waveform_output_dir = output_base / "waveforms"
+    
+    # Remove the existing sorter output folder if it exists.
+    if ss_output_dir.exists():
+        print(f"Removing existing sorter output folder: {ss_output_dir}")
+        shutil.rmtree(str(ss_output_dir))
 
     try:
         # Load recording and attach probe using set_probe

@@ -17,7 +17,6 @@ docker stop spikesort_c >nul 2>&1
 docker rm spikesort_c >nul 2>&1
 
 :: Prompt for all command-line parameters
-
 echo.
 set /p HOST_DATA_FOLDER="Enter the full path to the data folder (the folder that contains recording files): "
 set /p OUTPUT_FOLDER="Enter --output-folder (directory for processed output) (default: .): "
@@ -39,7 +38,7 @@ set /p COMPUTE_PC_FEATURES="Enter --compute-pc-features (true/false) (default: T
 set /p COMPUTE_AMPLITUDES="Enter --compute-amplitudes (true/false) (default: True): "
 set /p REMOVE_IF_EXISTS="Enter --remove-if-exists (true/false): "
 
-:: Only convert backslashes to forward slashes if the variable is not empty
+:: Convert backslashes to forward slashes if variables are not empty
 if not "%HOST_DATA_FOLDER%"=="" set "HOST_DATA_FOLDER=%HOST_DATA_FOLDER:\=/%"
 if not "%OUTPUT_FOLDER%"=="" set "OUTPUT_FOLDER=%OUTPUT_FOLDER:\=/%"
 if not "%PRB_FILE%"=="" set "PRB_FILE=%PRB_FILE:\=/%"
@@ -60,7 +59,7 @@ if "%MAX_SPIKES%"=="" set "MAX_SPIKES=2000"
 if "%COMPUTE_PC_FEATURES%"=="" set "COMPUTE_PC_FEATURES=True"
 if "%COMPUTE_AMPLITUDES%"=="" set "COMPUTE_AMPLITUDES=True"
 
-:: Process boolean parameters:
+:: Process boolean parameters
 if /i "%DISABLE_BATCH%"=="true" (
     set "DISABLE_ARG=--disable-batch"
 ) else (
@@ -77,7 +76,7 @@ if /i "%REMOVE_IF_EXISTS%"=="true" (
     set "REMOVE_ARG="
 )
 
-:: Process optional arguments that expect a value:
+:: Process optional arguments that expect a value
 if "%PRB_FILE%"=="" (
     set "PRB_ARG="
 ) else (
@@ -92,7 +91,8 @@ if "%RECORDING_FILE%"=="" (
 echo.
 echo Running Docker container with your parameters...
 
-docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" padillacoreanolab/spikesort:latest bash -c "source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"%OUTPUT_FOLDER%\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --max-spikes-per-unit \"%MAX_SPIKES%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\" %REMOVE_ARG%"
+:: Run docker with both data and output folders mounted. Output folder is mounted to /output.
+docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" -v "%OUTPUT_FOLDER%:/output" padillacoreanolab/spikesort:latest bash -c "source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"/output\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --max-spikes-per-unit \"%MAX_SPIKES%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\" %REMOVE_ARG%"
 
 echo.
 echo Container finished. Press any key to exit...

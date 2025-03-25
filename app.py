@@ -128,9 +128,9 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         plt.close()
         print("Raster plot saved at:", raster_plot_path)
 
-        # Extract waveforms.
+        # Extract waveforms using the new sorting analyzer
         print("Extracting waveforms...")
-        we_spike_sorted = si.extract_waveforms(
+        sorting_analyzer = si.create_sorting_analyzer(
             recording=recording_preproc_disk,
             sorting=spike_sorted_disk,
             folder=str(waveform_output_dir),
@@ -139,7 +139,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
             progress_bar=True,
             n_jobs=n_jobs,
             total_memory=total_memory,
-            overwrite=None,  # Updated: use None as required by the new version.
+            overwrite=True,
             max_spikes_per_unit=max_spikes_per_unit
         )
         print("Waveform extraction complete. Data saved to:", str(waveform_output_dir))
@@ -147,10 +147,10 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         # Delete preprocessed recording output to save disk space.
         shutil.rmtree(str(preproc_rec_dir))
 
-        # Export results to Phy.
+        # Export results to Phy using the sorting analyzer
         print("Exporting to Phy...")
         export_to_phy(
-            we_spike_sorted,
+            sorting_analyzer,
             str(phy_output_directory),
             compute_pc_features=compute_pc_features,
             compute_amplitudes=compute_amplitudes

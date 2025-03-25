@@ -115,7 +115,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         print("Spike sorted output saved to:", ss_output_dir)
 
         print("Saving preprocessed recording to disk...")
-        recording_preproc_disk = recording_preprocessed.save(folder=str(preproc_rec_dir))
+        recording_preproc_disk = recording_preprocessed.save(folder=str(preproc_rec_dir), overwrite=True)
         print("Preprocessed recording saved to:", preproc_rec_dir)
 
         # Plot raster and save figure.
@@ -141,6 +141,12 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
             total_memory=total_memory,
             overwrite=True
         )
+        print("Running waveforms analysis...")
+        sorting_analyzer.run_analysis("waveforms")
+
+        print("Running templates analysis...")
+        sorting_analyzer.run_analysis("templates")
+        
         print("Waveform extraction complete. Data saved to:", str(waveform_output_dir))
 
         # Delete preprocessed recording output to save disk space.

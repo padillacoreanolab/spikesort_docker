@@ -88,11 +88,16 @@ if "%RECORDING_FILE%"=="" (
     set "REC_ARG=--recording-file \"%RECORDING_FILE%\""
 )
 
+:: Generate a unique output subfolder name to avoid deletion/permission issues
+set "UNIQUE_OUTPUT=run_%RANDOM%"
+echo Output will be saved in subfolder: %OUTPUT_FOLDER%/%UNIQUE_OUTPUT%
+
 echo.
 echo Running Docker container with your parameters...
 
-:: Run docker with both data and output folders mounted. Output folder is mounted to /output.
-docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" -v "%OUTPUT_FOLDER%:/output" padillacoreanolab/spikesort:latest bash -c "source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"/output\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --max-spikes-per-unit \"%MAX_SPIKES%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\" %REMOVE_ARG%"
+:: Run Docker with both data and output folders mounted.
+:: The host's OUTPUT_FOLDER is mounted to /output and the unique subfolder is passed to the script.
+docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" -v "%OUTPUT_FOLDER%:/output" padillacoreanolab/spikesort:latest bash -c "source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"/output/%UNIQUE_OUTPUT%\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --max-spikes-per-unit \"%MAX_SPIKES%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\" %REMOVE_ARG%"
 
 echo.
 echo Container finished. Press any key to exit...

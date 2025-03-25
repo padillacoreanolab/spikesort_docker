@@ -27,7 +27,7 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def handle_sigint(signum, frame):
-    print("KeyboardInterrupt (Crtl-C) received. Exiting gracefully...")
+    print("KeyboardInterrupt (Ctrl-C) received. Exiting gracefully...")
     sys.exit(0)
 
 signal.signal(signal.SIGINT, handle_sigint)
@@ -61,10 +61,13 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
     recording_basename = os.path.basename(recording_file)
     output_base = Path(output_folder) / "proc" / recording_basename
 
-    # Check for existing output: if the 'phy' folder exists, skip processing.
+    # Define the completion marker file
+    complete_marker = output_base / "complete.txt"
+
+    # Check for existing final output: if the 'phy' folder or completion marker exists, skip processing.
     phy_output_directory = output_base / "phy"
-    if phy_output_directory.exists():
-        print(f"Skipping {recording_basename}: output folder already exists.")
+    if phy_output_directory.exists() or complete_marker.exists():
+        print(f"Skipping {recording_basename}: output already exists or processing is complete.")
         return
 
     print(f"\nProcessing recording: {recording_file}")
@@ -92,14 +95,14 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         recording_preprocessed = recording_preprocessed.set_probes(probe_object)
 
         # Prepare sorter parameters.
-        # Remove 'detect_sign' and 'use_gpu', and instead set torch_device.
+        # Set torch_device to "cuda" if a GPU is available and not forcing CPU, otherwise "cpu".
         default_sort_params = {
             "torch_device": "cuda" if is_gpu_available() and not force_cpu else "cpu"
         }
         default_sort_params.update(sort_params)
 
         print("Running sorting with Kilosort4 via unified interface...")
-        # Use folder (instead of output_folder) for specifying the output directory.
+        # Run the sorter using the designated folder.
         spike_sorted = ss.run_sorter(
             'kilosort4',
             recording=recording_preprocessed,
@@ -109,7 +112,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
 
         # Save outputs.
         print("Saving spike sorted output to disk...")
-        spike_sorted_disk = spike_sorted.save(folder=str(ss_output_dir))
+        spike_sorted_disk = spike_sorted.save(folder=str(ss_output_dir), overwrite=True)
         print("Spike sorted output saved to:", ss_output_dir)
 
         print("Saving preprocessed recording to disk...")
@@ -166,6 +169,10 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
                 f.writelines(lines)
         else:
             print(f"Warning: params.py not found in {phy_output_directory}")
+
+        # Write the completion marker.
+        with open(complete_marker, "w") as f:
+            f.write(f"Processing completed on {datetime.now()}\n")
 
         print(f"Finished processing {recording_basename}")
 

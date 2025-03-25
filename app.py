@@ -20,6 +20,9 @@ import spikeinterface.sorters as ss
 from spikeinterface.exporters import export_to_phy
 from probeinterface import get_probe, read_prb
 
+# Import the WaveformExtractor
+from spikeinterface import WaveformExtractor
+
 import signal
 import sys
 
@@ -129,57 +132,35 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         plt.close()
         print("Raster plot saved at:", raster_plot_path)
 
-        # Create the SortingAnalyzer for post-processing
-        print("Extracting waveforms using SortingAnalyzer...")
-        sorting_analyzer = si.create_sorting_analyzer(
+        # --- Replace SortingAnalyzer with WaveformExtractor ---
+        print("Creating WaveformExtractor (defaults: ms_before=%s, ms_after=%s, max_spikes_per_unit=%d)..." %
+              (ms_before, ms_after, random_spikes_max))
+        we = WaveformExtractor.create(
             recording=recording_preproc_disk,
             sorting=spike_sorted_disk,
             folder=str(waveform_output_dir),
             ms_before=ms_before,
             ms_after=ms_after,
-            progress_bar=True,
-            n_jobs=n_jobs,
-            total_memory=total_memory,
-            overwrite=True
+            max_spikes_per_unit=random_spikes_max
         )
+        print("WaveformExtractor created.")
 
-        # 1. Compute random spikes
-        print("Computing random spikes (default: max_spikes_per_unit=%d)..." % random_spikes_max)
-        sorting_analyzer.compute("random_spikes", max_spikes_per_unit=random_spikes_max)
-        print("Random spikes computed with max_spikes_per_unit =", random_spikes_max, "\n")
+        print("Extracting waveforms...")
+        we.extract_waveforms()
+        print("Waveforms extraction complete.")
 
-        # 2. Compute waveforms
-        print("Computing waveforms (default: ms_before=%s, ms_after=%s, n_jobs=%s, total_memory='%s')..." %
-              (ms_before, ms_after, n_jobs, total_memory))
-        sorting_analyzer.compute("waveforms", ms_before=ms_before, ms_after=ms_after, n_jobs=n_jobs, total_memory=total_memory)
-        print("Waveforms computed with ms_before=%s, ms_after=%s, n_jobs=%s, total_memory = '%s'.\n" %
-              (ms_before, ms_after, n_jobs, total_memory))
-
-        # 3. Compute templates
-        print("Computing templates (default: operators=['average'])...")
-        sorting_analyzer.compute("templates")
-        print("Templates computed with default parameters (operators=['average']).\n")
-
-        # 4. Compute principal components (optional for Phy export)
+        # Compute additional extensions if desired:
         print("Computing principal components (default: n_components=%d, mode='%s')..." % (pc_n_components, pc_mode))
-        sorting_analyzer.compute("principal_components", n_components=pc_n_components, mode=pc_mode)
+        we.compute_principal_components(n_components=pc_n_components, mode=pc_mode)
         print("Principal components computed with n_components=%d and mode='%s'.\n" % (pc_n_components, pc_mode))
 
-        # 5. Compute spike amplitudes (optional for Phy export)
         print("Computing spike amplitudes (default: peak_sign='%s')..." % spike_amp_peak_sign)
-        sorting_analyzer.compute("spike_amplitudes", peak_sign=spike_amp_peak_sign)
+        we.compute_spike_amplitudes(peak_sign=spike_amp_peak_sign)
         print("Spike amplitudes computed with peak_sign='%s'.\n" % spike_amp_peak_sign)
 
-        print("Waveform extraction complete. Data saved to:", str(waveform_output_dir))
-
-        # Export results to Phy using the sorting analyzer
-        print("Exporting to Phy...")
-        export_to_phy(
-            sorting_analyzer,
-            str(phy_output_directory),
-            compute_pc_features=compute_pc_features,
-            compute_amplitudes=compute_amplitudes
-        )
+        # Export to Phy using WaveformExtractor.
+        print("Exporting to Phy using WaveformExtractor...")
+        we.export_to_phy()
         print("PHY export saved!")
 
         # Update params.py to include the correct relative path.

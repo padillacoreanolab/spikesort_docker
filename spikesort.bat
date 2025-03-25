@@ -39,11 +39,11 @@ set /p COMPUTE_PC_FEATURES="Enter --compute-pc-features (true/false) (default: T
 set /p COMPUTE_AMPLITUDES="Enter --compute-amplitudes (true/false) (default: True): "
 set /p REMOVE_IF_EXISTS="Enter --remove-if-exists (true/false): "
 
-:: Convert backslashes to forward slashes in paths to avoid unicode escape issues.
-set "HOST_DATA_FOLDER=%HOST_DATA_FOLDER:\=/%"
-set "OUTPUT_FOLDER=%OUTPUT_FOLDER:\=/%"
-set "PRB_FILE=%PRB_FILE:\=/%"
-set "RECORDING_FILE=%RECORDING_FILE:\=/%"
+:: Only convert backslashes to forward slashes if the variable is not empty
+if not "%HOST_DATA_FOLDER%"=="" set "HOST_DATA_FOLDER=%HOST_DATA_FOLDER:\=/%"
+if not "%OUTPUT_FOLDER%"=="" set "OUTPUT_FOLDER=%OUTPUT_FOLDER:\=/%"
+if not "%PRB_FILE%"=="" set "PRB_FILE=%PRB_FILE:\=/%"
+if not "%RECORDING_FILE%"=="" set "RECORDING_FILE=%RECORDING_FILE:\=/%"
 
 :: Set default values if inputs are empty
 if "%OUTPUT_FOLDER%"=="" set "OUTPUT_FOLDER=."

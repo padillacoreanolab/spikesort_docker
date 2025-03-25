@@ -22,7 +22,6 @@ from probeinterface import get_probe, read_prb
 
 import signal
 import sys
-import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -54,9 +53,11 @@ def is_gpu_available():
 def process_recording(recording_file, output_folder, probe_object, sort_params,
                       stream_id, freq_min, freq_max, whiten_dtype, force_cpu,
                       ms_before, ms_after, n_jobs, total_memory, max_spikes_per_unit,
-                      compute_pc_features, compute_amplitudes, remove_if_exists):
+                      compute_pc_features, compute_amplitudes):
     """
     Process a single recording file using supplied parameters.
+    Each recording’s outputs will be stored in a subfolder under the user-specified
+    output folder (structure: <output_folder>/proc/<recording_basename>/).
     """
     recording_basename = os.path.basename(recording_file)
     output_base = Path(output_folder) / "proc" / recording_basename
@@ -73,7 +74,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
     print(f"\nProcessing recording: {recording_file}")
     os.makedirs(output_base, exist_ok=True)
     
-    # Define directories for sorter output and preprocessed recording.
+    # Define directories for sorter output, preprocessed recording, and waveforms.
     ss_output_dir = output_base / "ss_output"
     preproc_rec_dir = output_base / "preprocessed_recording_output"
     waveform_output_dir = output_base / "waveforms"
@@ -84,7 +85,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         shutil.rmtree(str(ss_output_dir))
 
     try:
-        # Load recording and attach probe using set_probe
+        # Load recording and attach probe using set_probe.
         recording_obj = se.read_spikegadgets(recording_file, stream_id=stream_id)
         recording_obj = recording_obj.set_probes(probe_object)
 
@@ -95,14 +96,12 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         recording_preprocessed = recording_preprocessed.set_probes(probe_object)
 
         # Prepare sorter parameters.
-        # Set torch_device to "cuda" if a GPU is available and not forcing CPU, otherwise "cpu".
         default_sort_params = {
             "torch_device": "cuda" if is_gpu_available() and not force_cpu else "cpu"
         }
         default_sort_params.update(sort_params)
 
         print("Running sorting with Kilosort4 via unified interface...")
-        # Run the sorter using the designated folder.
         spike_sorted = ss.run_sorter(
             'kilosort4',
             recording=recording_preprocessed,
@@ -154,8 +153,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
             we_spike_sorted,
             str(phy_output_directory),
             compute_pc_features=compute_pc_features,
-            compute_amplitudes=compute_amplitudes,
-            remove_if_exists=remove_if_exists
+            compute_amplitudes=compute_amplitudes
         )
         print("PHY export saved!")
 
@@ -243,8 +241,6 @@ def main():
                         help="Compute PC features for Phy export (default: True).")
     parser.add_argument("--compute-amplitudes", type=str2bool, default=True,
                         help="Compute amplitudes for Phy export (default: True).")
-    parser.add_argument("--remove-if-exists", action="store_true",
-                        help="Remove existing Phy export folder if it exists.")
 
     args = parser.parse_args()
     
@@ -325,8 +321,7 @@ def main():
             total_memory=args.total_memory,
             max_spikes_per_unit=args.max_spikes_per_unit,
             compute_pc_features=args.compute_pc_features,
-            compute_amplitudes=args.compute_amplitudes,
-            remove_if_exists=args.remove_if_exists
+            compute_amplitudes=args.compute_amplitudes
         )
 
     print("\nBatch processing complete. SPIKES ARE SORTED! :)")

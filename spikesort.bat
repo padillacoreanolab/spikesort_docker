@@ -19,7 +19,7 @@ docker rm spikesort_c >nul 2>&1
 :: Prompt for all command-line parameters
 echo.
 set /p HOST_DATA_FOLDER="Enter the full path to the data folder (the folder that contains recording files): "
-set /p OUTPUT_FOLDER="Enter --output-folder (directory for processed output) (default: .): "
+set /p OUTPUT_FOLDER="Enter --output-folder (directory for processed output): "
 set /p PRB_FILE="Enter --prb-file (path to .prb file) or leave blank for default: "
 set /p DISABLE_BATCH="Enter --disable-batch (true/false): "
 set /p RECORDING_FILE="Enter --recording-file (path to a single recording file) or leave blank: "
@@ -36,7 +36,6 @@ set /p TOTAL_MEMORY="Enter --total-memory (default '1G'): "
 set /p MAX_SPIKES="Enter --max-spikes-per-unit (default 2000): "
 set /p COMPUTE_PC_FEATURES="Enter --compute-pc-features (true/false) (default: True): "
 set /p COMPUTE_AMPLITUDES="Enter --compute-amplitudes (true/false) (default: True): "
-set /p REMOVE_IF_EXISTS="Enter --remove-if-exists (true/false): "
 
 :: Convert backslashes to forward slashes if variables are not empty
 if not "%HOST_DATA_FOLDER%"=="" set "HOST_DATA_FOLDER=%HOST_DATA_FOLDER:\=/%"
@@ -59,7 +58,7 @@ if "%MAX_SPIKES%"=="" set "MAX_SPIKES=2000"
 if "%COMPUTE_PC_FEATURES%"=="" set "COMPUTE_PC_FEATURES=True"
 if "%COMPUTE_AMPLITUDES%"=="" set "COMPUTE_AMPLITUDES=True"
 
-:: Process boolean parameters
+:: Process boolean parameters for DISABLE_BATCH and FORCE_CPU.
 if /i "%DISABLE_BATCH%"=="true" (
     set "DISABLE_ARG=--disable-batch"
 ) else (
@@ -70,13 +69,8 @@ if /i "%FORCE_CPU%"=="true" (
 ) else (
     set "FORCE_ARG="
 )
-if /i "%REMOVE_IF_EXISTS%"=="true" (
-    set "REMOVE_ARG=--remove-if-exists"
-) else (
-    set "REMOVE_ARG="
-)
 
-:: Process optional arguments that expect a value
+:: Process optional arguments that expect a value.
 if "%PRB_FILE%"=="" (
     set "PRB_ARG="
 ) else (
@@ -88,16 +82,11 @@ if "%RECORDING_FILE%"=="" (
     set "REC_ARG=--recording-file \"%RECORDING_FILE%\""
 )
 
-:: Generate a unique output subfolder name to avoid deletion/permission issues
-set "UNIQUE_OUTPUT=run_%RANDOM%"
-echo Output will be saved in subfolder: %OUTPUT_FOLDER%/%UNIQUE_OUTPUT%
-
 echo.
 echo Running Docker container with your parameters...
 
 :: Run Docker with both data and output folders mounted.
-:: The host's OUTPUT_FOLDER is mounted to /output and the unique subfolder is passed to the script.
-docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" -v "%OUTPUT_FOLDER%:/output" padillacoreanolab/spikesort:latest bash -c "source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"/output/%UNIQUE_OUTPUT%\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --max-spikes-per-unit \"%MAX_SPIKES%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\" %REMOVE_ARG%"
+docker run --rm -it --name spikesort_c --gpus all --log-driver=json-file -v "%HOST_DATA_FOLDER%:/spikesort" -v "%OUTPUT_FOLDER%:/output" padillacoreanolab/spikesort:latest bash -c "source /root/miniconda3/etc/profile.d/conda.sh && conda activate spikesort && python app.py --data-folder /spikesort --output-folder \"/output\" %PRB_ARG% %DISABLE_ARG% %REC_ARG% --stream-id \"%STREAM_ID%\" --freq-min \"%FREQ_MIN%\" --freq-max \"%FREQ_MAX%\" --whiten-dtype \"%WHITEN_DTYPE%\" --sort-params \"%SORT_PARAMS%\" %FORCE_ARG% --ms-before \"%MS_BEFORE%\" --ms-after \"%MS_AFTER%\" --n-jobs \"%N_JOBS%\" --total-memory \"%TOTAL_MEMORY%\" --max-spikes-per-unit \"%MAX_SPIKES%\" --compute-pc-features \"%COMPUTE_PC_FEATURES%\" --compute-amplitudes \"%COMPUTE_AMPLITUDES%\""
 
 echo.
 echo Container finished. Press any key to exit...

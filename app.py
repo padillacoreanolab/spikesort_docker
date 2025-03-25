@@ -149,11 +149,13 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         print("Random spikes computed with max_spikes_per_unit =", random_spikes_max, "\n")
 
         # 2. Compute waveforms
-        print("Computing waveforms (default: ms_before=%s, ms_after=%s, n_jobs=%s, total_memory='%s')..." %
-              (ms_before, ms_after, n_jobs, total_memory))
-        sorting_analyzer.compute("waveforms", ms_before=ms_before, ms_after=ms_after, n_jobs=n_jobs, total_memory=total_memory)
-        print("Waveforms computed with ms_before=%s, ms_after=%s, n_jobs=%s, total_memory = '%s'.\n" %
-              (ms_before, ms_after, n_jobs, total_memory))
+        # print("Computing waveforms (default: ms_before=%s, ms_after=%s, n_jobs=%s, total_memory='%s')..." %
+        #       (ms_before, ms_after, n_jobs, total_memory))
+        # sorting_analyzer.compute("waveforms", ms_before=ms_before, ms_after=ms_after, n_jobs=n_jobs, total_memory=total_memory)
+        # print("Waveforms computed with ms_before=%s, ms_after=%s, n_jobs=%s, total_memory = '%s'.\n" %
+        #       (ms_before, ms_after, n_jobs, total_memory))
+        
+        sorting_analyzer.compute("waveforms", n_jobs=1, total_memory=total_memory)
 
         # 3. Compute templates
         print("Computing templates (default: operators=['average'])...")
@@ -256,8 +258,8 @@ def main():
                         help="Milliseconds after spike for waveform extraction (default: 1).")
     parser.add_argument("--n-jobs", type=int, default=8,
                         help="Number of jobs for waveform extraction (default: 8).")
-    parser.add_argument("--total-memory", type=str, default="1G",
-                        help="Total memory available for waveform extraction (default: '1G').")
+    parser.add_argument("--total-memory", type=str, default="16G",
+                        help="Total memory available for waveform extraction (default: '16G').")
 
     # Phy export parameters.
     parser.add_argument("--compute-pc-features", type=str2bool, default=True,

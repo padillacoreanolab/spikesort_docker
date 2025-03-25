@@ -22,6 +22,9 @@ from probeinterface import get_probe, read_prb
 
 import signal
 import sys
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def handle_sigint(signum, frame):
     print("KeyboardInterrupt (Crtl-C) received. Exiting gracefully...")
@@ -98,16 +101,23 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
         )
 
         # Save outputs.
+        print("Saving spike sorted output to disk...")
         spike_sorted_disk = spike_sorted.save(folder=str(ss_output_dir))
+        print("Spike sorted output saved to:", ss_output_dir)
+
+        print("Saving preprocessed recording to disk...")
         recording_preproc_disk = recording_preprocessed.save(folder=str(preproc_rec_dir))
+        print("Preprocessed recording saved to:", preproc_rec_dir)
 
         # Plot raster and save figure.
+        print("Generating and saving raster plot...")
         sw.plot_rasters(spike_sorted)
         plt.title(recording_basename)
         plt.ylabel("Unit IDs")
         raster_plot_path = output_base / f"{recording_basename}_raster_plot.png"
         plt.savefig(str(raster_plot_path))
         plt.close()
+        print("Raster plot saved at:", raster_plot_path)
 
         # Extract waveforms.
         print("Extracting waveforms...")
@@ -123,6 +133,7 @@ def process_recording(recording_file, output_folder, probe_object, sort_params,
             overwrite=True,
             max_spikes_per_unit=max_spikes_per_unit
         )
+        print("Waveform extraction complete. Data saved to:", str(waveform_output_dir))
 
         # Delete preprocessed recording output to save disk space.
         shutil.rmtree(str(preproc_rec_dir))

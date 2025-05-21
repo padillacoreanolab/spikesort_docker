@@ -1,7 +1,3 @@
-Below is an updated README that reflects the current functionality of your tool, including the enhanced batch file that prompts for every available parameter.
-
----
-
 ```markdown
 # spikesort_docker: A SpikeSort Command Line Tool in Docker
 

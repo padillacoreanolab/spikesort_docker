@@ -259,12 +259,19 @@ To run the tool on HiperGator:
    pip install cchardet
    ```
 2. **Clone or Copy the Repository to HiperGator.**
+  OR you could only copy the old_app.py file and the appropriate .prb file. These two are all that is required to run.
 
-3. **Copy Data from Dropbox Using rclone.**
+4. **Copy Data from Dropbox Using rclone.**
 
-4. **Run the Tool:**
+5. **Run the Tool:**
 
-   Use the `old_app.py` file from the command line as usual, supplying your parameters.
+   Use the `old_app.py` file from the command line as follows.
+```bash
+conda activate spikesort
+python old_app.py <source folder coantaining all .rec files> <output directory where the spikesortedo outputs should be saved>
+```
+
+   
 ---
 
 ## Credits

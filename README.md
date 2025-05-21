@@ -1,4 +1,3 @@
-```markdown
 # spikesort_docker: A SpikeSort Command Line Tool in Docker
 
 **spikesort_docker** is a Python‐based command line tool that performs spike sorting on electrophysiological recordings using the [SpikeInterface](https://github.com/SpikeInterface) framework. The tool processes recording files by applying bandpass filtering, whitening, spike sorting (via Kilosort4), waveform extraction, and finally exporting the results to Phy for manual curation. It provides full parameter control through command line arguments.
@@ -243,6 +242,29 @@ To run the tool on HiperGator:
 
    Use the `app.py` file from the command line as usual, supplying your parameters.
 
+### Running the old version on HiperGator
+
+1. **Create the Conda Environment:**
+
+   ```bash
+   conda create -n spikesort python=3.9 --yes
+   conda activate spikesort
+   pip install spikeinterface[full,widgets]==0.97.1
+   pip install --upgrade mountainsort5
+   pip install pytest-shutil
+   conda install -c edeno spectral_connectivity --yes
+   conda install -c anaconda gitpython -y
+   conda install -c conda-forge gradio -y
+   pip install chardet
+   pip install cchardet
+   ```
+2. **Clone or Copy the Repository to HiperGator.**
+
+3. **Copy Data from Dropbox Using rclone.**
+
+4. **Run the Tool:**
+
+   Use the `old_app.py` file from the command line as usual, supplying your parameters.
 ---
 
 ## Credits

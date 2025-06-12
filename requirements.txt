@@ -1,2 +1,24 @@
-spikeinterface==0.102.3
-kilosort==4.0.37
+# Core Packages
+spikeinterface[full,widgets]==0.97.1
+mountainsort5==0.5.2
+numpy==1.24.4
+
+# Key Dependencies pinned to their Summer 2023 versions
+pandas==1.5.3
+scipy==1.11.1
+matplotlib==3.7.2
+scikit-learn==1.3.0
+neo==0.12.0
+zarr==2.16.0
+
+# NWB and HDMF dependencies pinned for compatibility
+pynwb==2.4.0
+hdmf==3.8.0
+h5py==3.9.0
+
+# Other required packages
+pytest-shutil==1.7.0
+gitpython==3.1.35
+gradio==3.41.2
+chardet==5.2.0
+cchardet==2.1.7

@@ -247,8 +247,8 @@ To run the tool on HiperGator:
 1. **Create the Conda Environment:**
 
    ```bash
-   conda create -n spikesort python=3.9 --yes
-   conda activate spikesort
+   conda create -n spikesort_old python=3.9 --yes
+   conda activate spikesort_old
    pip install spikeinterface[full,widgets]==0.97.1
    pip install --upgrade mountainsort5
    pip install pytest-shutil

@@ -251,15 +251,8 @@ To run the tool on HiperGator:
    ```bash
    conda create -n spikesort_old python=3.9 --yes
    conda activate spikesort_old
-   pip install spikeinterface[full,widgets]==0.97.1
-   pip install mountainsort5==0.5.2
-   pip install pytest-shutil==1.7.0
-   conda install -c edeno spectral_connectivity=0.4.1 --yes
-   conda install -c anaconda gitpython=3.1.35 -y
-   conda install -c conda-forge gradio=3.41.2 -y
-   pip install chardet==5.2.0
-   pip install cchardet==2.1.7
-   pip install numpy==1.24.4
+   pip install -r requirements.txt
+   conda install -c conda-forge spectral_connectivity=0.4.1 -y
    ```
 2. **Clone or Copy the Repository to HiperGator.**
   OR you could only copy the old_app.py file and the appropriate .prb file. These two are all that is required to run.

@@ -258,7 +258,7 @@ To run the tool on HiperGator:
    conda install -c anaconda gitpython=3.1.35 -y
    conda install -c conda-forge gradio=3.41.2 -y
    pip install chardet==5.2.0
-   pip install cchardet==5.2.0
+   pip install cchardet==2.1.7
    ```
 2. **Clone or Copy the Repository to HiperGator.**
   OR you could only copy the old_app.py file and the appropriate .prb file. These two are all that is required to run.

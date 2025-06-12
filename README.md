@@ -1,6 +1,6 @@
 # spikesort_docker: A SpikeSort Command Line Tool in Docker
 
-<mark>**WARNING**! - Currenly not wroking due to spikeinterface bug. Waiting for an update from that package to work. use the old version for now.</mark>
+<mark>**WARNING**! - Currenly not working due to spikeinterface bug. Waiting for an update from that package to work. use the old version for now.</mark>
 
 **spikesort_docker** is a Python‐based command line tool that performs spike sorting on electrophysiological recordings using the [SpikeInterface](https://github.com/SpikeInterface) framework. The tool processes recording files by applying bandpass filtering, whitening, spike sorting (via Kilosort4), waveform extraction, and finally exporting the results to Phy for manual curation. It provides full parameter control through command line arguments.
 

@@ -1,0 +1,2 @@
+spikeinterface==0.102.3
+kilosort==4.0.37

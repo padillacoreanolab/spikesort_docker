@@ -251,7 +251,7 @@ To run the tool on HiperGator:
    ```bash
    conda create -n spikesort_old python=3.9 --yes
    conda activate spikesort_old
-   pip install -r requirements.txt
+   pip install -r requirements_old.txt
    ```
 2. **Clone or Copy the Repository to HiperGator.**
   OR you could only copy the old_app.py file and the appropriate .prb file. These two are all that is required to run.
